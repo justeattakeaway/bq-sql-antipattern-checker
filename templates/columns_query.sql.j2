@@ -1,0 +1,29 @@
+with row_count as (
+    SELECT
+        table_catalog as project,
+        table_schema as dataset,
+        table_name as table,
+        CONCAT(table_catalog, '.', table_schema, '.', table_name) as full_table_name
+        , total_rows
+        FROM `{bigquery_dataset_project}.{bigquery_region}.INFORMATION_SCHEMA.TABLE_STORAGE_BY_PROJECT`
+        where total_rows >= {large_table_row_count}
+
+),
+column_info as (
+    select
+        CONCAT(table_catalog, '.', table_schema, '.', table_name) as full_table_name,
+        max(case when is_partitioning_column = "YES" then column_name end) as partitioned_column,
+        array_agg(case when data_type in ('DATE', 'DATETIME', 'TIME', 'TIMESTAMP') then column_name end IGNORE NULLS) as datetime_columns
+    from `{bigquery_dataset_project}.{bigquery_region}.INFORMATION_SCHEMA.COLUMNS`
+    group by 1
+)
+select
+    row_count.project,
+    row_count.dataset,
+    row_count.table,
+    row_count.full_table_name,
+    row_count.total_rows,
+    column_info.partitioned_column,
+    column_info.datetime_columns
+from row_count
+left join column_info on row_count.full_table_name = column_info.full_table_name
