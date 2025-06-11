@@ -1,0 +1,31 @@
+-- DDL of the table used to push results
+
+CREATE TABLE `{bigquery_dataset_project}.{bigquery_dataset}.antipattern_results`
+(
+  job_id STRING,
+  creation_date DATE,
+  creation_time STRING,
+  project_id STRING,
+  user_email STRING,
+  reservation_id STRING,
+  total_process_gb FLOAT64,
+  total_slot_hrs FLOAT64,
+  total_duration_mins FLOAT64,
+  query STRING,
+  partition_not_used BOOL,
+  available_partitions ARRAY<STRUCT<partitioned_column STRING, table_name STRING>>,
+  big_date_range BOOL,
+  no_date_on_big_table BOOL,
+  tables_without_date_filter ARRAY<STRING>,
+  select_star BOOL,
+  references_cte_multiple_times BOOL,
+  semi_join_without_aggregation BOOL,
+  order_without_limit BOOL,
+  like_before_more_selective BOOL,
+  regexp_in_where BOOL, 
+  queries_unpartitioned_table BOOL,
+  unpartitioned_tables ARRAY<STRING>,
+  distinct_on_big_table BOOL,
+  antipattern_run_time STRING
+)
+PARTITION BY creation_date;
