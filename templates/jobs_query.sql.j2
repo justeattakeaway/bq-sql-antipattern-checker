@@ -1,0 +1,43 @@
+with
+raw_data as (
+select
+  project_id
+  ,job_id
+  ,labels
+  ,error_result
+  ,user_email
+  ,reservation_id
+  ,query
+  ,creation_time
+  ,end_time
+  ,total_slot_ms
+  ,total_bytes_processed
+  ,job_type
+  ,statement_type
+  ,query_info
+    from
+`{query_project}.{region}.INFORMATION_SCHEMA.JOBS`
+WHERE
+    DATE(creation_time) = date({date})
+    and query is not null
+    AND (statement_type != "SCRIPT" or statement_type is NULL)
+    and total_slot_ms > 0
+    and query not like '%BQ.REFRESH_MATERIALIZED_VIEW%'
+)
+select
+    job_id
+    ,project_id
+    ,user_email
+    ,reservation_id
+    ,query
+    ,creation_time creation_time
+    ,DATE(creation_time) as creation_date
+    ,total_slot_ms
+    ,1.0*(TIMESTAMP_DIFF(end_time,creation_time,MINUTE)) total_duration_mins
+    ,total_bytes_processed / (1024*1024*1024.0) as total_process_gb
+    ,total_slot_ms / (1000*60*60) as total_slot_hrs
+    ,job_type
+    ,statement_type
+ from
+    raw_data
+-- limit 1000
