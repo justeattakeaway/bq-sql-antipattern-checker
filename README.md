@@ -8,11 +8,11 @@ It is used in entire JET including all production jobs, adhoc queries, dashboard
 Can you justify the cost of their query or task running? It's a difficult question to answer. However if someone asks "Can this job run cheaper and faster?", that's a question you can answer with a lot more confidence. This application aims to give you a very clear recipe of actions to take control of your costs on BigQuery and also create reports of cost, optimisation gaps and progress. The application checks the most impactful query antipatterns and shows the results and locations of them per query. 
 
 * You can use this application to check all the BigQuery jobs being executed in a specific project or your entire company. 
-* Since it doesn't differentiate type of jobs, they can be adhoc queries, Connected Sheet tasks, DAGs//Tasks, Dashboard extracts etc anything to has a query statement.
-* The application aims to provide optimisation gaps of those jobs with clear information of what is missing, what can be done on the query almost to the point of exact location on the query. 
+* It doesn't differentiate type of jobs, they can be adhoc queries, Connected Sheet tasks, DAGs//Tasks, Dashboard extracts etc anything to has a query statement.
+* The application aims to provide optimisation gaps of those jobs with clear information of what is missing, what can be done on the query. If it's about specific fields missing or wrongly used or unoptimised tables it also gives clear information about them. 
 * It also provides additional performance metrics and indicators to help with further optimising your query.
-* The application also produces an output table on job ID level along with query project and all the necessary information that can be directly plugged into a dashboard tool of your choice for team / company level aggregations.
 * You can use the information to tackle recurring costs on your DAGs due to lack of optimisation or show users the cost of their adhoc queries and what they can do to improve them next time.
+* The application also produces an output table on job ID level along with the query project and all the necessary information that can be directly plugged into a dashboard tool of your choice for team / company level aggregations.
 
 * At JET we usually assign a separate Query / Computation project to a team. If you have a similar approach you can use the project_id dimension of the output table to break things down by teams. You can add labels you have on your JOBS information_schema to have different levels of reports. 
 
