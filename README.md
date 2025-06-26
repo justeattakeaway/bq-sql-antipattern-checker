@@ -4,7 +4,7 @@
 SQL Antipattern is an in house made application to provide information about BQ jobs that contain antipattern cases that can be significant for optimisation both in terms of cost and runtimes.
 It is used in entire JET including all production jobs, adhoc queries, dashboard extracts etc
 
-## What Is The Purpose? How Can It Be Used?
+## What is the purpose? How can it be used?
 Can you justify the cost of their query or task running? It's a difficult question to answer. However if someone asks "Can this job run cheaper and faster?", that's a question you can answer with a lot more confidence. This application aims to give you a very clear recipe of actions to take control of your costs on BigQuery and also create reports of cost, optimisation gaps and progress. The application checks the most impactful query antipatterns and shows the results and locations of them per query. 
 
 * You can use this application to check all the BigQuery jobs being executed in a specific project or your entire company. 
