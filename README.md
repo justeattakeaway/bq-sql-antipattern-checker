@@ -24,12 +24,24 @@ But we wrote those ones from scratch as well, we didn’t refer to their codes b
 We added more cases that are not present in that repo. 
 
 ## Owner
-The application is owned by Data Platforms under Platform Engineering at JET
+The application is owned by Platform Engineering under Platform Engineering at JET
+
+## Code of Conduct
+We follow the principles as shared by [Contributor Covenant](https://www.contributor-covenant.org/version/2/1/code_of_conduct/)
+If you don't play nice, you will be banned. 
+
+## How can you contribute?
+There are numerous ways you can contribute in this project.
+* Improve code quality. This project is primarily aimed at getting the information required and enabling teams to take actionable advice through it. Code can be made leaner & more efficient. If you can show that the changes done don't change the results we are happy to evaluate it and make the changes.
+* Currently it's tailored to BigQuery dialect but it can be used on other dialects as well. Check relevant section below. 
+* New antipatterns. If you think there are critical things to check on BigQuery for optimisation and they can be added. 
+* Improving existing antipatterns, if you spotted scenarios being missed out in the existing antipatterns. 
 
 ## Requirements to Run On Your Environment
 * Python >= 3.10
-* Check requirements.txt for the other libraries
+* Check requirements.txt for the other libraries you need to import
 * A table created for the results. You can use the DDL SQL statement under templates
+* [Authorise BigQuery](https://cloud.google.com/bigquery/docs/authentication)
 
 Whether you run locally or as a cloud run you need these permissions
 * INFORMATION_SCHEMA views (JOBS, TABLE_STORAGE_BY_PROJECT, COLUMNS) for the query projects and dataset projects you want to check. Metadata Viewer role should suffice. 
@@ -65,6 +77,7 @@ Whether you run locally or as a cloud run you need these permissions
 Currently the SQL dialect for SQLGlot is BigQuery for BQ specific syntaxes and functions and some antipatterns are tuned for BQ specific cases.
 However SQLGlot supports many dialects and most of the antipatterns are valid for any SQL dialect. 
 We hope to increase coverage by working with fellow developers on different dialects and you can contribute into this as well. 
+You are welcome to reach out and discuss about collaboration.
 
 ## Antipatterns
 ### partition_not_used
