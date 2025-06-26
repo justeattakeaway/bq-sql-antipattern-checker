@@ -27,8 +27,7 @@ We added more cases that are not present in that repo.
 The application is owned by Platform Engineering under Platform Engineering at JET
 
 ## Code of Conduct
-We follow the principles as shared by [Contributor Covenant](https://www.contributor-covenant.org/version/2/1/code_of_conduct/)
-If you don't play nice, you will be banned. 
+Please see [Code of Conduct Guide](https://github.com/justeattakeaway/bq-sql-antipattern-checker/blob/main/CODE_OF_CONDUCT.md)
 
 ## How can you contribute?
 There are numerous ways you can contribute in this project.
