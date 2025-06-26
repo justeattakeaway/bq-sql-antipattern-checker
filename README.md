@@ -34,8 +34,9 @@ There are numerous ways you can contribute in this project.
 * Improve code quality. This project is primarily aimed at getting the information required and enabling teams to take actionable advice through it. Code can be made leaner & more efficient. If you can show that the changes done don't change the results we are happy to evaluate it and make the changes.
 * Currently it's tailored to BigQuery dialect but it can be used on other dialects as well. Check relevant section below. 
 * New antipatterns. If you think there are critical things to check on BigQuery for optimisation and they can be added. 
-* Improving existing antipatterns, if you spotted scenarios being missed out in the existing antipatterns. 
-
+* Improving existing antipatterns, if you spotted scenarios being missed out in the existing antipatterns.
+* For clarification of any questions and clarifications feel free to start a discussion. 
+  
 ## Requirements to Run On Your Environment
 * Python >= 3.10
 * Check requirements.txt for the other libraries you need to import
