@@ -28,6 +28,7 @@ The application is owned by Platform Engineering under Platform Engineering at J
 
 ## Code of Conduct
 Please see [Code of Conduct Guide](https://github.com/justeattakeaway/bq-sql-antipattern-checker/blob/main/CODE_OF_CONDUCT.md)
+If you don't play nice you'll be banned. 
 
 ## How can you contribute?
 There are numerous ways you can contribute in this project.
@@ -35,7 +36,7 @@ There are numerous ways you can contribute in this project.
 * Currently it's tailored to BigQuery dialect but it can be used on other dialects as well. Check relevant section below. 
 * New antipatterns. If you think there are critical things to check on BigQuery for optimisation and they can be added. 
 * Improving existing antipatterns, if you spotted scenarios being missed out in the existing antipatterns.
-* For clarification of any questions and clarifications feel free to start a discussion. 
+* For clarification of any questions and clarifications feel free to start a discussion.
   
 ## Requirements to Run On Your Environment
 * Python >= 3.10
