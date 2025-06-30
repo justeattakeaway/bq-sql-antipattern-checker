@@ -2,7 +2,7 @@ import pandas as pd
 import os
 from pathlib import Path
 
-from config import date_values, bigquery_job_project, large_table_row_count, information_schema_project
+from config import date_values, bigquery_job_project, large_table_row_count, information_schema_project, query_project
 from sqlglot import exp
 from google.cloud import bigquery
 from jinja2 import Template
