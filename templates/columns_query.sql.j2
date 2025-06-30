@@ -5,7 +5,7 @@ with row_count as (
         table_name as table,
         CONCAT(table_catalog, '.', table_schema, '.', table_name) as full_table_name
         , total_rows
-        FROM `{bigquery_dataset_project}.{bigquery_region}.INFORMATION_SCHEMA.TABLE_STORAGE_BY_PROJECT`
+        FROM `{information_schema_project}.{bigquery_region}.INFORMATION_SCHEMA.TABLE_STORAGE_BY_PROJECT`
         where total_rows >= {large_table_row_count}
 
 ),
@@ -14,7 +14,7 @@ column_info as (
         CONCAT(table_catalog, '.', table_schema, '.', table_name) as full_table_name,
         max(case when is_partitioning_column = "YES" then column_name end) as partitioned_column,
         array_agg(case when data_type in ('DATE', 'DATETIME', 'TIME', 'TIMESTAMP') then column_name end IGNORE NULLS) as datetime_columns
-    from `{bigquery_dataset_project}.{bigquery_region}.INFORMATION_SCHEMA.COLUMNS`
+    from `{information_schema_project}.{bigquery_region}.INFORMATION_SCHEMA.COLUMNS`
     group by 1
 )
 select
