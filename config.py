@@ -6,7 +6,7 @@ bigquery_job_project = os.getenv('BIGQUERY_JOB_PROJECT', "dev-project") #project
 bigquery_dataset_project = os.getenv('DESTINATION_DATASET_PROJECT', 'dev-dataset-project') #project where your results table resides
 bigquery_dataset = os.getenv('DESTINATION_DATASET', 'dev_dataset') #dataset where your results table resides
 bigquery_region = 'region-EU' #sample region. you can use different region based on your location
-information_schema_project = bigquery_dataset_project #specify if your your information schema views are stored on a different project than your results table
+information_schema_project = bigquery_dataset_project #specify if your your TABLE_STORAGE and COLUMNS views are stored on a different project than where your results table resides
 query_project = bigquery_job_project #project where INFORMATION_SCHEMA.JOBS view resides. This is for jobs you want to check for antipatterns. You can use different project if environment is different
 
 table_names = {
