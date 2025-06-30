@@ -57,7 +57,7 @@ There are numerous ways you can contribute in this project.
 * You need a BigQuery project to execute SQL statements and to populate results table. That is used in bigquery_job_project in config section below
 * A table created for the results. You can use the DDL SQL statement under templates. Full qualification of table name will be used for bigquery_dataset_project, bigquery_dataset and table_names variables in the config section below.
 * You need Google CLI to authorise, so install if your environment doesn't have it from [here](https://cloud.google.com/sdk/docs/install) 
-* You need to authorise your BigQuery job project if you haven't yet on your environment. If you installed Google CLI for the first time you can authorise your account and BigQuery project or you can use this [link](https://cloud.google.com/bigquery/docs/authentication) to configure your authorisation.
+* You need to authorise your BigQuery job project if you haven't yet on your environment. Follow the information on this [link](https://cloud.google.com/bigquery/docs/authentication) to configure your authorisation.
 
 Whether you run locally or as a cloud run, used account needs these permissions
 * INFORMATION_SCHEMA views (JOBS, TABLE_STORAGE_BY_PROJECT, COLUMNS) for the query projects and dataset projects you want to check. Metadata Viewer role should suffice. 
