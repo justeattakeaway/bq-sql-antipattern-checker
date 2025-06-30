@@ -39,7 +39,7 @@ We added more cases that are not present in that repo.
 The application is owned by Platform Engineering under Platform Engineering at JET
 
 ## Code of Conduct
-Please see [Code of Conduct Guide](https://github.com/justeattakeaway/bq-sql-antipattern-checker/blob/main/CODE_OF_CONDUCT.md)
+Please see [Code of Conduct Guide](https://github.com/justeattakeaway/bq-sql-antipattern-checker/blob/main/CODE_OF_CONDUCT.md). 
 If you don't play nice you'll be banned. 
 
 ## How can you contribute?
