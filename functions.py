@@ -2,7 +2,7 @@ import pandas as pd
 import os
 from pathlib import Path
 
-from config import date_values, bigquery_job_project, large_table_row_count
+from config import date_values, bigquery_job_project, large_table_row_count, information_schema_project
 from sqlglot import exp
 from google.cloud import bigquery
 from jinja2 import Template
@@ -41,7 +41,7 @@ def get_columns_dict(bigquery_dataset_project, bigquery_region, large_table_row_
     with open(f'{template_root_folder}/columns_query.sql.j2') as file_:
         template = Template(file_.read())
     query = template.render()
-    columns_query = query.format(bigquery_dataset_project=bigquery_dataset_project,
+    columns_query = query.format(information_schema_project=information_schema_project,
                                  bigquery_region=bigquery_region,
                                  large_table_row_count=large_table_row_count
                                 )
