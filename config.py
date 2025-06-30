@@ -7,7 +7,7 @@ bigquery_dataset_project = os.getenv('DESTINATION_DATASET_PROJECT', 'dev-dataset
 bigquery_dataset = os.getenv('DESTINATION_DATASET', 'dev_dataset') #dataset where your results table resides
 bigquery_region = 'region-EU' #sample region. you can use different region based on your location
 information_schema_project = bigquery_dataset_project #specify if your your information schema views are stored on a different project than your results table
-query_project = bigquery_job_project #you can use different project if environment is different
+query_project = bigquery_job_project #project where INFORMATION_SCHEMA.JOBS view resides. you can use different project if environment is different
 
 table_names = {
     'results': 'antipattern_results'
