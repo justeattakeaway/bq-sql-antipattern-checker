@@ -6,7 +6,7 @@ bigquery_job_project = os.getenv('BIGQUERY_JOB_PROJECT', "dev-project")
 bigquery_dataset_project = os.getenv('DESTINATION_DATASET_PROJECT', 'dev-dataset-project')
 bigquery_dataset = os.getenv('DESTINATION_DATASET', 'dev_dataset')
 bigquery_region = 'region-EU' #sample region. you can use different region based on your location
-query_project = bigquery_dataset_project #you can use different project if environment is different
+query_project = bigquery_job_project #you can use different project if environment is different
 
 table_names = {
     'results': 'antipattern_results'
