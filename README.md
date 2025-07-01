@@ -1,4 +1,5 @@
 # BigQuery Antipattern Checker
+test
 
 ## Introduction
 SQL Antipattern is an in house made application to provide information about BQ jobs that contain antipattern cases that can be significant for optimisation both in terms of cost and runtimes.
