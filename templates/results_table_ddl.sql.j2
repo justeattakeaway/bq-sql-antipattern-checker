@@ -26,6 +26,7 @@ CREATE TABLE `{bigquery_dataset_project}.{bigquery_dataset}.antipattern_results`
   queries_unpartitioned_table BOOL,
   unpartitioned_tables ARRAY<STRING>,
   distinct_on_big_table BOOL,
+  count_distinct_on_big_table BOOL,
   antipattern_run_time STRING
 )
 PARTITION BY creation_date;

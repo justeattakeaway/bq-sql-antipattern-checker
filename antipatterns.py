@@ -1,6 +1,7 @@
 from sqlglot import exp
 import datetime as dt
 import functions
+import config
 
 
 def check_select_star(ast):
@@ -417,7 +418,7 @@ def check_count_distinct_on_big_table(ast, columns_dict):
     Anti Pattern: Count Distinct on Large Tables
     """
     queried_tables = functions.get_queried_tables(ast, columns_dict, config.distinct_function_row_count)
-    if len(queried_tables) > 0: 
-        if ast.find(exp.Count).find(exp.Distinct):
+    if len(queried_tables) > 0:
+        if ast.find(exp.Count) and ast.find(exp.Count).find(exp.Distinct):
             return True
     return False
