@@ -26,7 +26,6 @@ class Job:
         self.order_without_limit = False
         self.like_before_more_selective = False
         self.regexp_in_where = False
-        self.distinct_and_group = False
         self.queries_unpartitioned_table = False
         self.unpartitioned_tables = []
         self.distinct_on_big_table = False
@@ -53,7 +52,12 @@ class Job:
                             self.available_partitions = [dict(t) for t in {tuple(d.items()) for d in
                                                                            self.available_partitions}]
 
+                        else:
+                            self.available_partitions = [{'table_name': '-', 'partitioned_column': '-'}]
+
+
                         big_date_range = antipatterns.check_big_date_range(ast)
+                        self.big_date_range = big_date_range
 
                         no_date_on_big_table, tables_without_date_filter = antipatterns.check_big_table_no_date(
                             ast, columns_dict)
@@ -61,6 +65,8 @@ class Job:
                         if no_date_on_big_table:
                             self.no_date_on_big_table = no_date_on_big_table
                             self.tables_without_date_filter += tables_without_date_filter
+                        else:
+                            self.tables_without_date_filter = ['-']
 
                         #A job can have multiple SELECT statements executed. One case is enough to flag as True, hence max function
                         self.select_star = max(antipatterns.check_select_star(ast), self.select_star)
@@ -81,15 +87,12 @@ class Job:
 
                         self.regexp_in_where = max(antipatterns.check_regexp_in_where(ast), self.regexp_in_where)
 
-                        self.distinct_and_group = max(antipatterns.check_distinct_and_group(ast),
-                                                      self.distinct_and_group)
-
                         queries_unpartitioned_table, unpartitioned_tables = antipatterns.check_unpartitioned_tables(ast,
                                                                                                                     columns_dict)
                         self.queries_unpartitioned_table = max(queries_unpartitioned_table,
                                                                self.queries_unpartitioned_table)
 
-                        self.unpartitioned_tables += unpartitioned_tables
+                        self.unpartitioned_tables += unpartitioned_tables if self.queries_unpartitioned_table else ['-']
 
                         self.distinct_on_big_table = max(
                             antipatterns.check_distinct_on_big_table(ast, columns_dict),
