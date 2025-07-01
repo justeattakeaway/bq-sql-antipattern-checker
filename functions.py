@@ -7,9 +7,6 @@ from sqlglot import exp
 from google.cloud import bigquery
 from jinja2 import Template
 
-template_root_folder = Path(os.path.dirname(os.path.realpath(__file__)),
-                            "../antipattern-checker/templates")
-
 
 def get_client():
     return bigquery.Client(project=bigquery_job_project)
@@ -18,7 +15,7 @@ def get_client():
 def get_jobs_dict(date, query_project, bigquery_region):
     # TODO: Add required BigQuery job labels
 
-    with open(f'{template_root_folder}/jobs_query.sql.j2') as file_:
+    with open(f'templates/jobs_query.sql.j2') as file_:
         template = Template(file_.read())
     query = template.render()
     jobs_query = query.format(
@@ -38,7 +35,7 @@ def get_jobs_dict(date, query_project, bigquery_region):
 
 def get_columns_dict(bigquery_dataset_project, bigquery_region, large_table_row_count):
     # TODO: Add required BigQuery job labels
-    with open(f'{template_root_folder}/columns_query.sql.j2') as file_:
+    with open(f'templates/columns_query.sql.j2') as file_:
         template = Template(file_.read())
     query = template.render()
     columns_query = query.format(information_schema_project=information_schema_project,
