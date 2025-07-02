@@ -16,7 +16,7 @@ Can you justify the cost of their query or task running? It's a difficult questi
 
 * At JET we usually assign a separate Query / Computation project to a team. If you have a similar approach you can use the project_id dimension of the output table to break things down by teams. You can add labels you have on your JOBS information_schema to have different levels of reports. 
 
-## What is an antipattern?
+## What is a SQL antipattern?
 Antipatterns are specific SQL syntaxes that in some cases might cause performance impact and they are generally accepted as bad coding practice.
 
 There are a variety of conditions that can be used in query which can create huge computational complexity unnecessarily and also impact the code readability and quality. 
@@ -27,12 +27,15 @@ After that the queries go through a series of functions using SQLGlot Parser to 
 
 Final output is pushed to a BQ table.
 
+## How accurate is this?
+Some of the antipatterns are a lot more straightforward to detect (like Select *) but some of them vary heavily depending on the style of the user writing that query and the functions used. We have tested extensively using JET queries and we are confident that it has significant coverage over the impactful antipatterns. Please also note that some edge cases of SQL syntaxes are not detectable by SQLGlot so do not expect 100% coverage. Our aim is not to achieve such coverage but to provide a platform to detect major issues with optimisation and provide actionable insights on them. 
+
 ## Development Information
 Every function for antipattern check is developed from scratch by testing real queries used at JET.
 
 We got inspiration from some of the antipatterns that can be found in this opensource repo 
 [GoogleCloudPlatform/bigquery-antipattern-recognition](https://github.com/GoogleCloudPlatform/bigquery-antipattern-recognition)   
-But we wrote those ones from scratch as well, we didn’t refer to their codes because it’s in Java, and we are using Python and a different library to solve our problems.
+But we wrote those ones from scratch as well, we didn’t refer to their codes because it’s in Java, and we are using Python to make it more convenient and a different library to solve our problems.
 We added more cases that are not present in that repo. 
 
 ## Owner
