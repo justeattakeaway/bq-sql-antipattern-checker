@@ -20,7 +20,7 @@ Example:
 
     >>> push_df_to_bq(results_df, config)
 """
-import pprint
+
 from pathlib import Path
 from typing import Any
 
@@ -44,7 +44,7 @@ def get_client(config: Config) -> bigquery.Client:
     return bigquery.Client(project=config.bigquery_job_project)
 
 
-def get_jobs_dict(config: Config) -> dict[str, Any]:
+def get_jobs_dict(config: Config, limit_row: int | None) -> dict[str, Any]:
     """Retrieve BigQuery jobs for a specific date and project.
 
     Queries INFORMATION_SCHEMA.JOBS to get job metadata including SQL statements
@@ -52,7 +52,7 @@ def get_jobs_dict(config: Config) -> dict[str, Any]:
 
     Args:
         config: Configuration object containing BigQuery settings
-        date: Date string for filtering jobs (format: 'YYYY-MM-DD')
+        limit_row: limit on the number of rows to return (None for no limit)
 
     Returns:
         dict: Dictionary of jobs indexed by job ID, containing job metadata
@@ -63,7 +63,7 @@ def get_jobs_dict(config: Config) -> dict[str, Any]:
     template_path = Path(__file__).parent / "templates" / "jobs_query.sql.j2"
     with open(template_path) as file_:
         template = Template(file_.read())
-    query = template.render()
+    query = template.render(limit_row=limit_row)
     jobs_query = query.format(
         region=config.bigquery_region,
         date=config.date_values["query_run_date_str"],
@@ -114,7 +114,7 @@ def get_columns_dict(config: Config) -> dict[str, Any]:
 
 
 def get_queried_tables(
-    ast: exp.Expression, columns_dict: dict[str, Any], config: Config
+    ast: exp.Expression, columns_dict: dict[str, Any], row_count: int
 ) -> dict[str, dict[str, Any]]:
     """Extract queried table information from SQL AST.
 
@@ -135,33 +135,26 @@ def get_queried_tables(
             for t in c.find_all(exp.Table):
                 if t.args.get("db"):
                     full_table_name, alias = get_alias_and_table_name_from_table(t)
-                    if full_table_name and "*" in full_table_name:
+                    if "*" in full_table_name:
                         table_list = [
                             k for k in columns_dict.keys() if full_table_name.replace("*", "") in k
                         ]
-                    elif full_table_name:
-                        table_list = [k for k in columns_dict.keys() if full_table_name == k]
                     else:
-                        table_list = []
+                        table_list = [k for k in columns_dict.keys() if full_table_name == k]
                     if len(table_list) > 0:
                         table_list.sort()
                         total_rows = 0
-                        partitioned_column = None
-                        available_datetime_columns = 0
-                        available_datetime_columns_list: list[Any] = []
-                        table = None
                         for k in table_list:
                             total_rows += columns_dict[k]["total_rows"]
                             partitioned_column = columns_dict[k].get("partitioned_column")
-                            datetime_cols = columns_dict[k].get("datetime_columns")
-                            available_datetime_columns = len(datetime_cols) if datetime_cols else 0
-                            available_datetime_columns_list = datetime_cols or []
+                            available_datetime_columns = len(
+                                columns_dict[k].get("datetime_columns")
+                            )
+                            available_datetime_columns_list = columns_dict[k].get(
+                                "datetime_columns"
+                            )
                             table = columns_dict[k].get("table")
-                        if (
-                            full_table_name
-                            and full_table_name not in queried_tables
-                            and total_rows >= config.large_table_row_count
-                        ):
+                        if full_table_name not in queried_tables and total_rows >= row_count:
                             queried_tables[full_table_name] = {
                                 "full_table_name": full_table_name,
                                 "total_rows": total_rows,
@@ -172,7 +165,7 @@ def get_queried_tables(
                                 "table": table,
                             }
                         if alias:
-                            if alias not in queried_tables and total_rows >= config.large_table_row_count:
+                            if alias not in queried_tables and total_rows >= row_count:
                                 queried_tables[alias] = {
                                     "full_table_name": full_table_name,
                                     "total_rows": total_rows,
@@ -197,31 +190,19 @@ def get_alias_and_table_name_from_table(table: exp.Table) -> tuple[str | None, s
     full_table_name = None
     alias = None
     if table.args.get("db"):
-        this_ref = table.args.get("this")
-        if this_ref:
-            table_name_val = this_ref.args.get("this")
-            if table_name_val:
-                full_table_name = str(table_name_val)
-
-                db_ref = table.args.get("db")
-                if db_ref:
-                    dataset = db_ref.args.get("this")
-                    if dataset:
-                        full_table_name = str(dataset) + "." + full_table_name
-
-                catalog_ref = table.args.get("catalog")
-                if catalog_ref:
-                    project = catalog_ref.args.get("this")
-                    if project:
-                        full_table_name = str(project) + "." + full_table_name
-
-        alias_ref = table.args.get("alias")
-        if alias_ref:
-            alias_this = alias_ref.args.get("this")
-            if alias_this:
-                alias_this_val = alias_this.args.get("this")
-                if alias_this_val:
-                    alias = str(alias_this_val)
+        table_name = table.args.get("this").args.get("this")
+        full_table_name = str(table_name)
+        if table.args.get("db"):
+            dataset = table.args.get("db").args.get("this")
+            full_table_name = dataset + "." + full_table_name
+        if table.args.get("catalog"):
+            project = table.args.get("catalog").args.get("this")
+            full_table_name = project + "." + full_table_name
+        alias = (
+            table.args.get("alias").args.get("this").args.get("this")
+            if table.args.get("alias")
+            else None
+        )
 
     return full_table_name, alias
 

@@ -114,105 +114,151 @@ class Job:
                     if not ast.find(exp.UserDefinedFunction) and not ast.find(exp.SetItem):
                         # Check partition usage
                         if config.is_antipattern_enabled("partition_used"):
-                            partition_not_used, available_partitions = (
-                                self.antipatterns.check_partition_used(ast, columns_dict)
-                            )
-                            if partition_not_used:
-                                self.partition_not_used = partition_not_used
-                                self.available_partitions += available_partitions
-                                self.available_partitions = [
-                                    dict(t)
-                                    for t in {tuple(d.items()) for d in self.available_partitions}
-                                ]
-                            else:
-                                self.available_partitions = [
-                                    {"table_name": "-", "partitioned_column": "-"}
-                                ]
+                            try:
+                                partition_not_used, available_partitions = (
+                                    self.antipatterns.check_partition_used(ast, columns_dict)
+                                )
+                                if partition_not_used:
+                                    self.partition_not_used = partition_not_used
+                                    self.available_partitions += available_partitions
+                                    self.available_partitions = [
+                                        dict(t)
+                                        for t in {
+                                            tuple(d.items()) for d in self.available_partitions
+                                        }
+                                    ]
+                                else:
+                                    self.available_partitions = [
+                                        {"table_name": "-", "partitioned_column": "-"}
+                                    ]
+                            except Exception as e:
+                                print(f"Error in check_partition_used: {e!s}")
 
                         # Check big date range
                         if config.is_antipattern_enabled("big_date_range"):
-                            big_date_range = self.antipatterns.check_big_date_range(ast)
-                            self.big_date_range = big_date_range
+                            try:
+                                big_date_range = self.antipatterns.check_big_date_range(ast)
+                                self.big_date_range = big_date_range
+                            except Exception as e:
+                                print(f"Error in check_big_date_range: {e!s}")
 
                         # Check big table without date filter
                         if config.is_antipattern_enabled("big_table_no_date"):
-                            no_date_on_big_table, tables_without_date_filter = (
-                                self.antipatterns.check_big_table_no_date(ast, columns_dict)
-                            )
-                            if no_date_on_big_table:
-                                self.no_date_on_big_table = no_date_on_big_table
-                                self.tables_without_date_filter += tables_without_date_filter
-                            else:
-                                self.tables_without_date_filter = ["-"]
+                            try:
+                                no_date_on_big_table, tables_without_date_filter = (
+                                    self.antipatterns.check_big_table_no_date(ast, columns_dict)
+                                )
+                                if no_date_on_big_table:
+                                    self.no_date_on_big_table = no_date_on_big_table
+                                    self.tables_without_date_filter += tables_without_date_filter
+                                else:
+                                    self.tables_without_date_filter = ["-"]
+                            except Exception as e:
+                                print(f"Error in check_big_table_no_date: {e!s}")
 
                         # Check select star
                         if config.is_antipattern_enabled("select_star"):
-                            # A job can have multiple SELECT statements executed. One case is enough to flag as True, hence max function
-                            self.select_star = max(
-                                self.antipatterns.check_select_star(ast), self.select_star
-                            )
+                            try:
+                                # A job can have multiple SELECT statements executed. One case is enough to flag as True, hence max function
+                                self.select_star = max(
+                                    self.antipatterns.check_select_star(ast), self.select_star
+                                )
+                            except Exception as e:
+                                print(f"Error in check_select_star: {e!s}")
 
                         # Check multiple CTE references
                         if config.is_antipattern_enabled("multiple_cte_reference"):
-                            references_cte_multiple_times = (
-                                self.antipatterns.check_multiple_cte_reference(ast)
-                            )
-                            self.references_cte_multiple_times = max(
-                                references_cte_multiple_times, self.references_cte_multiple_times
-                            )
+                            try:
+                                references_cte_multiple_times = (
+                                    self.antipatterns.check_multiple_cte_reference(ast)
+                                )
+                                self.references_cte_multiple_times = max(
+                                    references_cte_multiple_times,
+                                    self.references_cte_multiple_times,
+                                )
+                            except Exception as e:
+                                print(f"Error in check_multiple_cte_reference: {e!s}")
 
                         # Check semi join without aggregation
                         if config.is_antipattern_enabled("semi_join_without_aggregation"):
-                            self.semi_join_without_aggregation = max(
-                                self.antipatterns.check_semi_join_without_aggregation(ast),
-                                self.semi_join_without_aggregation,
-                            )
+                            try:
+                                self.semi_join_without_aggregation = max(
+                                    self.antipatterns.check_semi_join_without_aggregation(ast),
+                                    self.semi_join_without_aggregation,
+                                )
+                            except Exception as e:
+                                print(f"Error in check_semi_join_without_aggregation: {e!s}")
 
                         # Check order without limit
                         if config.is_antipattern_enabled("order_without_limit"):
-                            self.order_without_limit = max(
-                                self.antipatterns.check_order_without_limit(ast),
-                                self.order_without_limit,
-                            )
+                            try:
+                                self.order_without_limit = max(
+                                    self.antipatterns.check_order_without_limit(ast),
+                                    self.order_without_limit,
+                                )
+                            except Exception as e:
+                                print(f"Error in check_order_without_limit: {e!s}")
 
                         # Check like before more selective
                         if config.is_antipattern_enabled("like_before_more_selective"):
-                            self.like_before_more_selective = max(
-                                self.antipatterns.check_like_before_more_selective(ast),
-                                self.like_before_more_selective,
-                            )
+                            try:
+                                self.like_before_more_selective = max(
+                                    self.antipatterns.check_like_before_more_selective(ast),
+                                    self.like_before_more_selective,
+                                )
+                            except Exception as e:
+                                print(f"Error in check_like_before_more_selective: {e!s}")
 
                         # Check regexp in where
                         if config.is_antipattern_enabled("regexp_in_where"):
-                            self.regexp_in_where = max(
-                                self.antipatterns.check_regexp_in_where(ast), self.regexp_in_where
-                            )
+                            try:
+                                self.regexp_in_where = max(
+                                    self.antipatterns.check_regexp_in_where(ast),
+                                    self.regexp_in_where,
+                                )
+                            except Exception as e:
+                                print(f"Error in check_regexp_in_where: {e!s}")
 
                         # Check unpartitioned tables
                         if config.is_antipattern_enabled("unpartitioned_tables"):
-                            queries_unpartitioned_table, unpartitioned_tables = (
-                                self.antipatterns.check_unpartitioned_tables(ast, columns_dict)
-                            )
-                            self.queries_unpartitioned_table = max(
-                                queries_unpartitioned_table, self.queries_unpartitioned_table
-                            )
-                            self.unpartitioned_tables += (
-                                unpartitioned_tables if self.queries_unpartitioned_table else ["-"]
-                            )
+                            try:
+                                queries_unpartitioned_table, unpartitioned_tables = (
+                                    self.antipatterns.check_unpartitioned_tables(ast, columns_dict)
+                                )
+                                self.queries_unpartitioned_table = max(
+                                    queries_unpartitioned_table, self.queries_unpartitioned_table
+                                )
+                                self.unpartitioned_tables += (
+                                    unpartitioned_tables
+                                    if self.queries_unpartitioned_table
+                                    else ["-"]
+                                )
+                            except Exception as e:
+                                print(f"Error in check_unpartitioned_tables: {e!s}")
 
                         # Check distinct on big table
                         if config.is_antipattern_enabled("distinct_on_big_table"):
-                            self.distinct_on_big_table = max(
-                                self.antipatterns.check_distinct_on_big_table(ast, columns_dict),
-                                self.distinct_on_big_table,
-                            )
+                            try:
+                                self.distinct_on_big_table = max(
+                                    self.antipatterns.check_distinct_on_big_table(
+                                        ast, columns_dict
+                                    ),
+                                    self.distinct_on_big_table,
+                                )
+                            except Exception as e:
+                                print(f"Error in check_distinct_on_big_table: {e!s}")
 
                         # Check count distinct on big table
                         if config.is_antipattern_enabled("count_distinct_on_big_table"):
-                            self.count_distinct_on_big_table = max(
-                                self.antipatterns.check_count_distinct_on_big_table(ast, columns_dict),
-                                self.count_distinct_on_big_table,
-                            )
+                            try:
+                                self.count_distinct_on_big_table = max(
+                                    self.antipatterns.check_count_distinct_on_big_table(
+                                        ast, columns_dict
+                                    ),
+                                    self.count_distinct_on_big_table,
+                                )
+                            except Exception as e:
+                                print(f"Error in check_count_distinct_on_big_table: {e!s}")
 
             except Exception as e:
                 print(f"Error processing statement: {e!s}")

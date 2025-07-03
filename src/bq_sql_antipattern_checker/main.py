@@ -169,6 +169,9 @@ def run_antipattern_check(
     dry_run: bool = typer.Option(
         False, "--dry-run", help="Save results locally instead of pushing to BigQuery"
     ),
+    limit_row: int | None = typer.Option(
+        None, "--limit-row", help="Limit number of rows to process (default: 100)"
+    ),
     output_format: OutputFormat = typer.Option(
         OutputFormat.CONSOLE,
         "--output-format",
@@ -206,7 +209,7 @@ def run_antipattern_check(
             raise typer.Exit(code=1)
 
         # Run the antipattern check
-        run_check(config, verbose, dry_run, output_format, output_file)
+        run_check(config, verbose, dry_run, limit_row, output_format, output_file)
 
     except Exception as e:
         console.print(f"✗ Error: {e}", style="red")
@@ -285,7 +288,7 @@ def show_config(
         bq_table = Table()
         bq_table.add_column("Setting", style="yellow")
         bq_table.add_column("Value", style="green")
-        
+
         bq_table.add_row("Job Project", config.bigquery_job_project)
         bq_table.add_row("Dataset Project", config.bigquery_dataset_project)
         bq_table.add_row("Dataset", config.bigquery_dataset)
@@ -293,7 +296,7 @@ def show_config(
         bq_table.add_row("Information Schema Project", config.information_schema_project)
         bq_table.add_row("Query Project", config.query_project)
         bq_table.add_row("Results Table", config.results_table_name)
-        
+
         console.print(bq_table)
 
         # Display thresholds
@@ -301,11 +304,13 @@ def show_config(
         threshold_table = Table()
         threshold_table.add_column("Setting", style="yellow")
         threshold_table.add_column("Value", style="green")
-        
+
         threshold_table.add_row("Large Table Row Count", str(config.large_table_row_count))
-        threshold_table.add_row("Distinct Function Row Count", str(config.distinct_function_row_count))
+        threshold_table.add_row(
+            "Distinct Function Row Count", str(config.distinct_function_row_count)
+        )
         threshold_table.add_row("Days Back", str(config.days_back))
-        
+
         console.print(threshold_table)
 
         # Display date configuration
@@ -313,10 +318,10 @@ def show_config(
         date_table = Table()
         date_table.add_column("Setting", style="yellow")
         date_table.add_column("Value", style="green")
-        
+
         for key, value in config.date_values.items():
             date_table.add_row(key.replace("_", " ").title(), str(value))
-        
+
         console.print(date_table)
 
         # Display antipatterns status
@@ -341,7 +346,9 @@ def show_config(
         # Summary
         enabled_count = len(config.get_enabled_antipatterns()) if config.antipatterns else 0
         total_count = len(config.antipatterns) if config.antipatterns else 0
-        console.print(f"\n📈 Summary: {enabled_count}/{total_count} antipatterns enabled", style="bold green")
+        console.print(
+            f"\n📈 Summary: {enabled_count}/{total_count} antipatterns enabled", style="bold green"
+        )
 
     except Exception as e:
         console.print(f"✗ Error loading configuration: {e}", style="red")
@@ -466,6 +473,7 @@ def run_check(
     config: Config,
     verbose: bool = False,
     dry_run: bool = False,
+    limit_row: int | None = None,
     output_format: OutputFormat = OutputFormat.CONSOLE,
     output_file: Path | None = None,
 ) -> None:
@@ -480,17 +488,13 @@ def run_check(
     if verbose:
         console.print("📊 Fetching column information...", style="blue")
 
-    columns_dict = functions.get_columns_dict(
-        config
-    )
+    columns_dict = functions.get_columns_dict(config)
 
     # Get jobs dictionary
     if verbose:
         console.print("📋 Fetching job information...", style="blue")
 
-    jobs_dict = functions.get_jobs_dict(
-        config
-    )
+    jobs_dict = functions.get_jobs_dict(config, limit_row)
 
     console.print(f"📈 Jobs Found: {len(jobs_dict)}", style="green")
 
@@ -525,10 +529,7 @@ def run_check(
         if verbose:
             console.print("📤 Pushing results to BigQuery...", style="blue")
 
-        functions.push_df_to_bq(
-            job_output_df,
-            config
-        )
+        functions.push_df_to_bq(job_output_df, config)
 
     end = time.perf_counter()
     elapsed = end - start
