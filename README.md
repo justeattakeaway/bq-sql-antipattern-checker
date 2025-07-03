@@ -94,14 +94,17 @@ pip install -e .
 
 5. **Run the antipattern checker:**
    ```bash
-   # Run and push results to BigQuery
-   bq-antipattern-checker run --config antipattern-config.yaml
+   # Test with a small sample first (recommended)
+   bq-antipattern-checker run --config antipattern-config.yaml --dry-run --limit-row 10
 
    # Run with dry-run to save results locally
    bq-antipattern-checker run --config antipattern-config.yaml --dry-run
 
-   # Run with verbose output
-   bq-antipattern-checker run --config antipattern-config.yaml --verbose
+   # Run and push results to BigQuery
+   bq-antipattern-checker run --config antipattern-config.yaml
+
+   # Run with verbose output and limited rows
+   bq-antipattern-checker run --config antipattern-config.yaml --verbose --limit-row 100
    ```
 
 ## Usage
@@ -127,6 +130,12 @@ bq-antipattern-checker run --config my-config.yaml --verbose
 # Save results locally instead of pushing to BigQuery
 bq-antipattern-checker run --dry-run --output-format json
 
+# Limit number of jobs processed (useful for testing)
+bq-antipattern-checker run --limit-row 50
+
+# Combine dry-run with limit for local testing
+bq-antipattern-checker run --dry-run --limit-row 10 --output-format csv
+
 # List all available antipatterns
 bq-antipattern-checker list-antipatterns
 
@@ -137,21 +146,65 @@ bq-antipattern-checker show-config
 bq-antipattern-checker create-config --output my-config.yaml
 ```
 
+### Command Options
+
+#### `run` Command Options
+
+* `--config, -c` - Path to YAML configuration file (default: `antipattern-config.yaml`)
+* `--verbose, -v` - Enable verbose output for detailed progress information
+* `--dry-run` - Save results locally instead of pushing to BigQuery
+* `--limit-row` - Limit number of jobs to process (useful for testing or sampling)
+* `--output-format` - Output format for dry-run: `console`, `json`, `csv`, `parquet`
+* `--output-file` - Specify output file path (auto-generated if not provided)
+
+#### Other Commands
+
+* `list-antipatterns --config [file]` - List antipatterns with their enabled/disabled status
+* `show-config --config [file]` - Display detailed configuration including all settings
+* `create-config --output [file] --force` - Create configuration file with optional force overwrite
+
 ### Output Formats (for dry-run)
 
 When using `--dry-run`, you can specify different output formats:
 
-* `console` - Display results in terminal (default)
-* `json` - Save as JSON file
-* `csv` - Save as CSV file
-* `parquet` - Save as Parquet file
+* `console` - Display formatted results in terminal with summary statistics (default)
+* `json` - Save results as JSON file with complete job metadata
+* `csv` - Save results as CSV file for spreadsheet analysis
+* `parquet` - Save results as Parquet file for efficient data processing
 
 ```bash
-# Save results as CSV
+# Save results as CSV with specific filename
 bq-antipattern-checker run --dry-run --output-format csv --output-file results.csv
 
-# Display results in console
-bq-antipattern-checker run --dry-run --output-format console
+# Display results in console with verbose output
+bq-antipattern-checker run --dry-run --output-format console --verbose
+
+# Process limited jobs and save as JSON for testing
+bq-antipattern-checker run --dry-run --limit-row 100 --output-format json
+
+# Save as Parquet for data analysis
+bq-antipattern-checker run --dry-run --output-format parquet --output-file analysis.parquet
+```
+
+### Performance and Testing
+
+The `--limit-row` option is particularly useful for:
+
+* **Testing configurations** - Process a small sample before full runs
+* **Development** - Quick feedback during development
+* **Sampling** - Analyze a subset of jobs for pattern identification
+* **Resource management** - Control processing load on large job datasets
+
+**Example testing workflow:**
+```bash
+# 1. Test with small sample first
+bq-antipattern-checker run --dry-run --limit-row 10 --verbose
+
+# 2. If successful, run larger sample
+bq-antipattern-checker run --dry-run --limit-row 100 --output-format csv
+
+# 3. Finally, run full analysis
+bq-antipattern-checker run --verbose
 ```
 
 ## Configuration
@@ -167,6 +220,46 @@ Key configuration sections:
 * **Thresholds**: Row counts for large table detection
 * **Date settings**: Number of days back to analyze
 * **Antipatterns**: Enable/disable specific checks
+
+### Database Setup
+
+Before running the tool, you need to create a results table in BigQuery. The tool includes a DDL template:
+
+```sql
+-- Create the results table (replace with your project/dataset)
+CREATE TABLE `your-project.your-dataset.antipattern_results`
+(
+  job_id STRING,
+  creation_date DATE,
+  creation_time STRING,
+  project_id STRING,
+  user_email STRING,
+  reservation_id STRING,
+  total_process_gb FLOAT64,
+  total_slot_hrs FLOAT64,
+  total_duration_mins FLOAT64,
+  query STRING,
+  partition_not_used BOOL,
+  available_partitions ARRAY<STRUCT<partitioned_column STRING, table_name STRING>>,
+  big_date_range BOOL,
+  no_date_on_big_table BOOL,
+  tables_without_date_filter ARRAY<STRING>,
+  select_star BOOL,
+  references_cte_multiple_times BOOL,
+  semi_join_without_aggregation BOOL,
+  order_without_limit BOOL,
+  like_before_more_selective BOOL,
+  regexp_in_where BOOL, 
+  queries_unpartitioned_table BOOL,
+  unpartitioned_tables ARRAY<STRING>,
+  distinct_on_big_table BOOL,
+  count_distinct_on_big_table BOOL,
+  antipattern_run_time STRING
+)
+PARTITION BY creation_date;
+```
+
+The table is partitioned by `creation_date` for efficient querying and data management. When the tool runs with the same date, it replaces the partition data, allowing for safe re-runs.
 
 ## How can you contribute?
 There are numerous ways you can contribute in this project.
@@ -228,6 +321,26 @@ antipatterns:
     enabled: true
     description: "Check for SELECT * statements that can impact performance"
   
+  semi_join_without_aggregation:
+    enabled: true
+    description: "Check for semi-joins without proper aggregation"
+  
+  order_without_limit:
+    enabled: true
+    description: "Check for ORDER BY clauses without LIMIT"
+  
+  regexp_in_where:
+    enabled: true
+    description: "Check for expensive REGEXP functions in WHERE clauses"
+  
+  like_before_more_selective:
+    enabled: true
+    description: "Check for LIKE conditions placed before more selective conditions"
+  
+  multiple_cte_reference:
+    enabled: true
+    description: "Check for CTEs that are referenced multiple times (may cause re-evaluation)"
+  
   partition_used:
     enabled: true
     description: "Check if partitioned tables are properly filtered by partition key"
@@ -236,7 +349,21 @@ antipatterns:
     enabled: true
     description: "Check for date ranges larger than 365 days"
   
-  # ... additional antipatterns
+  big_table_no_date:
+    enabled: true
+    description: "Check for queries on large tables without date filters"
+  
+  unpartitioned_tables:
+    enabled: true
+    description: "Check for queries on large unpartitioned tables"
+  
+  distinct_on_big_table:
+    enabled: true
+    description: "Check for DISTINCT operations on large tables"
+  
+  count_distinct_on_big_table:
+    enabled: true
+    description: "Check for COUNT DISTINCT operations on large tables"
 ```
 
 ### Configuration Variable Details
@@ -291,14 +418,104 @@ You can display your current configuration settings at any time using:
 bq-antipattern-checker show-config --config your-config.yaml
 ```
 
-## Information About antipatterns.py
-* This file contains all the functions for each antipattern. 
-* They take in AST (Asymmetric Syntax Tree) conversion done by SQLGlot and uses the same library to parse and check for relevant conditions
+## Architecture Overview
 
-## Information About functions.py
-* Contains helper functions like preparing the output and pushing into BQ
-* Also contains functions like getting column, partition & storage information, getting the jobs to check for antipatterns
-* Helper functions like getting table alias from the SQL syntax and getting project, dataset, table information from queries
+The application is built with a modular, class-based architecture for better maintainability and configuration management:
+
+### Core Components
+
+#### `antipatterns.py` - Antipattern Detection Class
+* Contains the `Antipatterns` class that encapsulates all antipattern detection logic
+* Instantiated with a `Config` object to respect enabled/disabled antipattern settings
+* Each antipattern is a class method that analyzes SQLGlot AST (Abstract Syntax Tree)
+* **Enhanced Error Handling**: Each antipattern check has individual try-catch blocks for precise error identification
+* Provides both class-based interface and backwards-compatible function wrappers
+
+**Key Features:**
+* Configuration-driven execution (only runs enabled antipatterns)
+* Individual error handling per antipattern for easier debugging
+* Clean separation of concerns
+* Extensible design for adding new antipatterns
+
+#### `functions.py` - Helper Functions
+* Contains utility functions for BigQuery operations and data processing
+* All functions now accept `Config` object as parameter for centralized configuration
+* Functions include:
+  - BigQuery client management and query execution
+  - Column, partition & storage information retrieval
+  - Job metadata extraction from INFORMATION_SCHEMA
+  - Table alias and naming utilities
+  - Results formatting and BigQuery upload
+
+#### `config.py` - Configuration Management
+* `Config` dataclass for centralized configuration management
+* Support for YAML file configuration and environment variable overrides
+* Individual antipattern enable/disable controls
+* Backwards compatibility with legacy configuration methods
+
+#### `classes.py` - Job Processing
+* `Job` class represents individual BigQuery jobs for analysis
+* Integrates with `Antipatterns` class for configuration-aware processing
+* **Enhanced Error Handling**: Individual try-catch blocks for each antipattern check
+* Detailed error messages that identify which specific antipattern failed
+
+### Error Handling Improvements
+
+The application now provides granular error reporting:
+
+```
+Error in check_partition_used: division by zero
+Error in check_big_date_range: invalid date format
+Error in check_select_star: unexpected AST structure
+```
+
+This makes debugging much easier by pinpointing exactly which antipattern detection failed and why, rather than generic error messages.
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### Authentication Issues
+```bash
+# Error: Could not automatically determine credentials
+gcloud auth application-default login
+
+# Error: Permission denied
+# Ensure your account has the required BigQuery permissions:
+# - Metadata Viewer role for INFORMATION_SCHEMA access
+# - Editor role for the results dataset
+```
+
+#### Configuration Issues
+```bash
+# Verify your configuration
+bq-antipattern-checker show-config --config your-config.yaml
+
+# Test with a small sample first
+bq-antipattern-checker run --dry-run --limit-row 5 --verbose
+```
+
+#### Memory/Performance Issues
+```bash
+# Use limit-row for large datasets
+bq-antipattern-checker run --limit-row 1000
+
+# Process in smaller batches during testing
+bq-antipattern-checker run --dry-run --limit-row 100
+```
+
+#### Debugging Antipattern Errors
+When specific antipattern checks fail, the enhanced error handling will show exactly which check failed:
+```
+Error in check_big_table_no_date: KeyError: 'column_name'
+Error in check_partition_used: AttributeError: 'NoneType' object has no attribute 'args'
+```
+
+This allows you to:
+1. Identify problematic queries by job ID
+2. Focus debugging on specific antipattern logic
+3. Temporarily disable problematic antipatterns in configuration
+4. Report specific errors for investigation
 
 ## How it Operates
 * Gets all the jobs from the given project
@@ -317,7 +534,34 @@ You are welcome to reach out and discuss about collaboration.
 
 ## Antipatterns
 
-### partition_not_used
+The tool currently detects 12 different SQL antipatterns. You can view the status of all antipatterns using:
+
+```bash
+bq-antipattern-checker list-antipatterns --config your-config.yaml
+```
+
+Each antipattern can be individually enabled or disabled in your configuration file.
+
+### Complete Antipattern List
+
+| Antipattern | Default | Description |
+|-------------|---------|-------------|
+| `select_star` | ✓ | SELECT * statements that can impact performance |
+| `semi_join_without_aggregation` | ✓ | Semi-joins without proper aggregation |
+| `order_without_limit` | ✓ | ORDER BY clauses without LIMIT |
+| `regexp_in_where` | ✓ | Expensive REGEXP functions in WHERE clauses |
+| `like_before_more_selective` | ✓ | LIKE conditions before more selective conditions |
+| `multiple_cte_reference` | ✓ | CTEs referenced multiple times (causes re-evaluation) |
+| `partition_used` | ✓ | Partitioned tables not filtered by partition key |
+| `big_date_range` | ✓ | Date ranges larger than 365 days |
+| `big_table_no_date` | ✓ | Queries on large tables without date filters |
+| `unpartitioned_tables` | ✓ | Queries on large unpartitioned tables |
+| `distinct_on_big_table` | ✓ | DISTINCT operations on large tables |
+| `count_distinct_on_big_table` | ✓ | COUNT DISTINCT operations on large tables |
+
+### Detailed Antipattern Descriptions
+
+### partition_used (formerly partition_not_used)
 
 If a table in JOIN or WHERE clause references a table with a partitioned column but the query is not using that column in JOIN or WHERE, then this value is True.
 
