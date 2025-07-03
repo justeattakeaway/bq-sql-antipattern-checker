@@ -24,7 +24,7 @@ from typing import Any
 import sqlparse
 from sqlglot import exp, parse_one
 
-from . import antipatterns
+from .antipatterns import Antipatterns
 from .config import Config
 
 
@@ -45,11 +45,12 @@ class Job:
         Various antipattern flags (select_star, partition_not_used, etc.)
     """
 
-    def __init__(self, v: dict[str, Any]) -> None:
+    def __init__(self, v: dict[str, Any], antipatterns: Antipatterns) -> None:
         """Initialize Job with BigQuery job metadata.
 
         Args:
             v: Dictionary containing job metadata from INFORMATION_SCHEMA.JOBS
+            antipatterns: Antipatterns object
         """
         self.creation_date = v["creation_date"]
         self.creation_time = v["creation_time"].strftime("%Y-%m-%d %H:%M:%S")
@@ -79,6 +80,7 @@ class Job:
         self.count_distinct_on_big_table = False
 
         self.antipattern_run_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.antipatterns = antipatterns
 
     def get_statements(self) -> list[str]:
         """Split the job query into individual SQL statements.
@@ -113,7 +115,7 @@ class Job:
                         # Check partition usage
                         if config.is_antipattern_enabled("partition_used"):
                             partition_not_used, available_partitions = (
-                                antipatterns.check_partition_used(ast, columns_dict)
+                                self.antipatterns.check_partition_used(ast, columns_dict)
                             )
                             if partition_not_used:
                                 self.partition_not_used = partition_not_used
@@ -129,13 +131,13 @@ class Job:
 
                         # Check big date range
                         if config.is_antipattern_enabled("big_date_range"):
-                            big_date_range = antipatterns.check_big_date_range(ast)
+                            big_date_range = self.antipatterns.check_big_date_range(ast)
                             self.big_date_range = big_date_range
 
                         # Check big table without date filter
                         if config.is_antipattern_enabled("big_table_no_date"):
                             no_date_on_big_table, tables_without_date_filter = (
-                                antipatterns.check_big_table_no_date(ast, columns_dict)
+                                self.antipatterns.check_big_table_no_date(ast, columns_dict)
                             )
                             if no_date_on_big_table:
                                 self.no_date_on_big_table = no_date_on_big_table
@@ -147,13 +149,13 @@ class Job:
                         if config.is_antipattern_enabled("select_star"):
                             # A job can have multiple SELECT statements executed. One case is enough to flag as True, hence max function
                             self.select_star = max(
-                                antipatterns.check_select_star(ast), self.select_star
+                                self.antipatterns.check_select_star(ast), self.select_star
                             )
 
                         # Check multiple CTE references
                         if config.is_antipattern_enabled("multiple_cte_reference"):
                             references_cte_multiple_times = (
-                                antipatterns.check_multiple_cte_reference(ast)
+                                self.antipatterns.check_multiple_cte_reference(ast)
                             )
                             self.references_cte_multiple_times = max(
                                 references_cte_multiple_times, self.references_cte_multiple_times
@@ -162,34 +164,34 @@ class Job:
                         # Check semi join without aggregation
                         if config.is_antipattern_enabled("semi_join_without_aggregation"):
                             self.semi_join_without_aggregation = max(
-                                antipatterns.check_semi_join_without_aggregation(ast),
+                                self.antipatterns.check_semi_join_without_aggregation(ast),
                                 self.semi_join_without_aggregation,
                             )
 
                         # Check order without limit
                         if config.is_antipattern_enabled("order_without_limit"):
                             self.order_without_limit = max(
-                                antipatterns.check_order_without_limit(ast),
+                                self.antipatterns.check_order_without_limit(ast),
                                 self.order_without_limit,
                             )
 
                         # Check like before more selective
                         if config.is_antipattern_enabled("like_before_more_selective"):
                             self.like_before_more_selective = max(
-                                antipatterns.check_like_before_more_selective(ast),
+                                self.antipatterns.check_like_before_more_selective(ast),
                                 self.like_before_more_selective,
                             )
 
                         # Check regexp in where
                         if config.is_antipattern_enabled("regexp_in_where"):
                             self.regexp_in_where = max(
-                                antipatterns.check_regexp_in_where(ast), self.regexp_in_where
+                                self.antipatterns.check_regexp_in_where(ast), self.regexp_in_where
                             )
 
                         # Check unpartitioned tables
                         if config.is_antipattern_enabled("unpartitioned_tables"):
                             queries_unpartitioned_table, unpartitioned_tables = (
-                                antipatterns.check_unpartitioned_tables(ast, columns_dict)
+                                self.antipatterns.check_unpartitioned_tables(ast, columns_dict)
                             )
                             self.queries_unpartitioned_table = max(
                                 queries_unpartitioned_table, self.queries_unpartitioned_table
@@ -201,14 +203,14 @@ class Job:
                         # Check distinct on big table
                         if config.is_antipattern_enabled("distinct_on_big_table"):
                             self.distinct_on_big_table = max(
-                                antipatterns.check_distinct_on_big_table(ast, columns_dict),
+                                self.antipatterns.check_distinct_on_big_table(ast, columns_dict),
                                 self.distinct_on_big_table,
                             )
 
                         # Check count distinct on big table
                         if config.is_antipattern_enabled("count_distinct_on_big_table"):
                             self.count_distinct_on_big_table = max(
-                                antipatterns.check_count_distinct_on_big_table(ast, columns_dict),
+                                self.antipatterns.check_count_distinct_on_big_table(ast, columns_dict),
                                 self.count_distinct_on_big_table,
                             )
 

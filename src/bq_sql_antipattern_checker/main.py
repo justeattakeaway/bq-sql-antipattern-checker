@@ -21,7 +21,6 @@ Example:
 import json
 import time
 from pathlib import Path
-from typing import Any
 from enum import Enum
 
 import typer
@@ -32,6 +31,7 @@ from rich.table import Table
 from . import functions
 from .classes import Job
 from .config import Config
+from .antipatterns import Antipatterns
 
 
 class OutputFormat(str, Enum):
@@ -497,10 +497,10 @@ def run_check(
     # Process jobs
     job_output = {}
     processed_jobs = 0
-
+    antipatterns = Antipatterns(config)
     for k, v in jobs_dict.items():
         job_id = v["job_id"]
-        job = Job(v)
+        job = Job(v, antipatterns)
         job.check_antipatterns(columns_dict, config)
 
         job_output[job_id] = job.__dict__
