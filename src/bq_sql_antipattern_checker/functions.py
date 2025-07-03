@@ -12,14 +12,15 @@ data access and manipulation capabilities.
 Example:
     Get column information for large tables:
 
-    >>> columns_dict = get_columns_dict("project", "US", 1000)
+    >>> config = Config.from_env()
+    >>> columns_dict = get_columns_dict(config)
     >>> print(f"Found {len(columns_dict)} large tables")
 
     Upload results to BigQuery:
 
-    >>> push_df_to_bq(results_df, "results", "project", "dataset")
+    >>> push_df_to_bq(results_df, config)
 """
-
+import pprint
 from pathlib import Path
 from typing import Any
 
@@ -28,33 +29,30 @@ from google.cloud import bigquery
 from jinja2 import Template
 from sqlglot import exp
 
-from .config import (
-    bigquery_job_project,
-    date_values,
-    information_schema_project,
-    large_table_row_count,
-)
+from .config import Config
 
 
-def get_client() -> bigquery.Client:
+def get_client(config: Config) -> bigquery.Client:
     """Get a BigQuery client instance.
+
+    Args:
+        config: Configuration object containing BigQuery settings
 
     Returns:
         bigquery.Client: Authenticated BigQuery client for the configured project.
     """
-    return bigquery.Client(project=bigquery_job_project)
+    return bigquery.Client(project=config.bigquery_job_project)
 
 
-def get_jobs_dict(date: str, query_project: str, bigquery_region: str) -> dict[str, Any]:
+def get_jobs_dict(config: Config) -> dict[str, Any]:
     """Retrieve BigQuery jobs for a specific date and project.
 
     Queries INFORMATION_SCHEMA.JOBS to get job metadata including SQL statements
     for analysis. Uses a Jinja2 template to construct the query.
 
     Args:
+        config: Configuration object containing BigQuery settings
         date: Date string for filtering jobs (format: 'YYYY-MM-DD')
-        query_project: BigQuery project ID containing the jobs to analyze
-        bigquery_region: BigQuery region for the INFORMATION_SCHEMA query
 
     Returns:
         dict: Dictionary of jobs indexed by job ID, containing job metadata
@@ -67,13 +65,13 @@ def get_jobs_dict(date: str, query_project: str, bigquery_region: str) -> dict[s
         template = Template(file_.read())
     query = template.render()
     jobs_query = query.format(
-        region=bigquery_region,
-        date=date,
-        query_project=query_project,
-        bigquery_region=bigquery_region,
+        region=config.bigquery_region,
+        date=config.date_values["query_run_date_str"],
+        query_project=config.query_project,
+        bigquery_region=config.bigquery_region,
     )
 
-    query_job = get_client().query(jobs_query)
+    query_job = get_client(config).query(jobs_query)
     if query_job.result():
         jobs_df = query_job.to_dataframe()
         jobs_dict: dict = jobs_df.to_dict("index")
@@ -82,9 +80,7 @@ def get_jobs_dict(date: str, query_project: str, bigquery_region: str) -> dict[s
         return {}
 
 
-def get_columns_dict(
-    bigquery_dataset_project: str, bigquery_region: str, large_table_row_count: int
-) -> dict[str, Any]:
+def get_columns_dict(config: Config) -> dict[str, Any]:
     """Retrieve column and table metadata for large tables.
 
     Queries INFORMATION_SCHEMA to get table metadata including row counts,
@@ -92,9 +88,7 @@ def get_columns_dict(
     specified size threshold.
 
     Args:
-        bigquery_dataset_project: Project ID containing the datasets to analyze
-        bigquery_region: BigQuery region for the INFORMATION_SCHEMA query
-        large_table_row_count: Minimum row count threshold for "large" tables
+        config: Configuration object containing BigQuery settings
 
     Returns:
         dict: Dictionary of table metadata indexed by full table name
@@ -106,12 +100,11 @@ def get_columns_dict(
         template = Template(file_.read())
     query = template.render()
     columns_query = query.format(
-        information_schema_project=information_schema_project,
-        bigquery_region=bigquery_region,
-        large_table_row_count=large_table_row_count,
+        information_schema_project=config.information_schema_project,
+        bigquery_region=config.bigquery_region,
+        large_table_row_count=config.large_table_row_count,
     )
-
-    query_job = get_client().query(columns_query)
+    query_job = get_client(config).query(columns_query)
     if query_job.result():
         columns_df = query_job.to_dataframe()
         columns_dict: dict[str, Any] = columns_df.set_index("full_table_name").to_dict("index")
@@ -121,7 +114,7 @@ def get_columns_dict(
 
 
 def get_queried_tables(
-    ast: exp.Expression, columns_dict: dict[str, Any], row_count: int = large_table_row_count
+    ast: exp.Expression, columns_dict: dict[str, Any], config: Config
 ) -> dict[str, dict[str, Any]]:
     """Extract queried table information from SQL AST.
 
@@ -131,7 +124,7 @@ def get_queried_tables(
     Args:
         ast: SQLGlot AST representing the parsed SQL query
         columns_dict: Dictionary of table metadata from get_columns_dict()
-        row_count: Minimum row count threshold for tables to include
+        config: Configuration object containing table row count thresholds
 
     Returns:
         dict: Dictionary of queried table metadata with aliases resolved
@@ -167,7 +160,7 @@ def get_queried_tables(
                         if (
                             full_table_name
                             and full_table_name not in queried_tables
-                            and total_rows >= row_count
+                            and total_rows >= config.large_table_row_count
                         ):
                             queried_tables[full_table_name] = {
                                 "full_table_name": full_table_name,
@@ -179,7 +172,7 @@ def get_queried_tables(
                                 "table": table,
                             }
                         if alias:
-                            if alias not in queried_tables and total_rows >= row_count:
+                            if alias not in queried_tables and total_rows >= config.large_table_row_count:
                                 queried_tables[alias] = {
                                     "full_table_name": full_table_name,
                                     "total_rows": total_rows,
@@ -348,7 +341,7 @@ def get_output_df(output: dict[str, Any], index_value: str) -> pd.DataFrame:
     return output_df
 
 
-def push_df_to_bq(df: pd.DataFrame, table: str, project: str, dataset: str) -> None:
+def push_df_to_bq(df: pd.DataFrame, config: Config) -> None:
     """Upload DataFrame to BigQuery table.
 
     Uploads the results DataFrame to a partitioned BigQuery table,
@@ -356,15 +349,13 @@ def push_df_to_bq(df: pd.DataFrame, table: str, project: str, dataset: str) -> N
 
     Args:
         df: pandas DataFrame containing the results
-        table: Target table name
-        project: BigQuery project ID
-        dataset: BigQuery dataset name
+        config: Configuration object containing BigQuery settings
     """
     table_id = "{dataset_project}.{dataset_name}.{table_name}${date}".format(
-        dataset_project=project,
-        dataset_name=dataset,
-        table_name=table,
-        date=date_values["partition_date"],
+        dataset_project=config.bigquery_dataset_project,
+        dataset_name=config.bigquery_dataset,
+        table_name=config.results_table_name,
+        date=config.date_values["partition_date"],
     )
     job_config = bigquery.LoadJobConfig(
         write_disposition="WRITE_TRUNCATE",
@@ -374,11 +365,11 @@ def push_df_to_bq(df: pd.DataFrame, table: str, project: str, dataset: str) -> N
             field="creation_date",  # field to use for partitioning
         ),
     )
-    job = get_client().load_table_from_dataframe(
+    job = get_client(config).load_table_from_dataframe(
         df, table_id, job_config=job_config
     )  # Make an API request.
 
     job.result()  # Wait
 
-    bq_table = get_client().get_table(table_id)  # Make an API request.
+    bq_table = get_client(config).get_table(table_id)  # Make an API request.
     print(f"Loaded {bq_table.num_rows} rows and {len(bq_table.schema)} columns to {table_id}")

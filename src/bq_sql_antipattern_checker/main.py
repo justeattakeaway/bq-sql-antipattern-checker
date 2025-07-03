@@ -198,7 +198,7 @@ def run_antipattern_check(
             console.print("✓ Using environment variables for configuration", style="yellow")
 
         if verbose:
-            console.print(f"Enabled antipatterns: {', '.join(config.get_enabled_antipatterns())}")
+            show_config(config_file)
 
         # Validate output format when dry-run is used
         if not dry_run and output_format != OutputFormat.CONSOLE:
@@ -481,7 +481,7 @@ def run_check(
         console.print("📊 Fetching column information...", style="blue")
 
     columns_dict = functions.get_columns_dict(
-        config.bigquery_dataset_project, config.bigquery_region, config.large_table_row_count
+        config
     )
 
     # Get jobs dictionary
@@ -489,7 +489,7 @@ def run_check(
         console.print("📋 Fetching job information...", style="blue")
 
     jobs_dict = functions.get_jobs_dict(
-        str(config.date_values["query_run_date_str"]), config.query_project, config.bigquery_region
+        config
     )
 
     console.print(f"📈 Jobs Found: {len(jobs_dict)}", style="green")
@@ -527,9 +527,7 @@ def run_check(
 
         functions.push_df_to_bq(
             job_output_df,
-            config.table_names["results"],
-            config.bigquery_dataset_project,
-            config.bigquery_dataset,
+            config
         )
 
     end = time.perf_counter()
