@@ -124,7 +124,7 @@ def get_queried_tables(
     Args:
         ast: SQLGlot AST representing the parsed SQL query
         columns_dict: Dictionary of table metadata from get_columns_dict()
-        config: Configuration object containing table row count thresholds
+        row_count: Minimum row count for a table to be considered
 
     Returns:
         dict: Dictionary of queried table metadata with aliases resolved

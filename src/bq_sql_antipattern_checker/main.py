@@ -20,8 +20,8 @@ Example:
 
 import json
 import time
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
 
 import typer
 from pandas import DataFrame
@@ -29,9 +29,9 @@ from rich.console import Console
 from rich.table import Table
 
 from . import functions
+from .antipatterns import Antipatterns
 from .classes import Job
 from .config import Config
-from .antipatterns import Antipatterns
 
 
 class OutputFormat(str, Enum):
