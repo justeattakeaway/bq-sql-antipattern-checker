@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from bq_sql_antipattern_checker.config import Config
+from src.bq_sql_antipattern_checker.config import Config
 
 
 @pytest.fixture

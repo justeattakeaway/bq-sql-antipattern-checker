@@ -24,8 +24,8 @@ from typing import Any
 import sqlparse
 from sqlglot import exp, parse_one
 
-from .antipatterns import Antipatterns
-from .config import Config
+from antipatterns import Antipatterns
+from config import Config
 
 
 class Job:

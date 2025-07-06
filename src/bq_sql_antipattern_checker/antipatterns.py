@@ -30,8 +30,8 @@ from typing import Any
 
 from sqlglot import exp
 
-from . import functions
-from .config import Config
+from config import Config
+import functions
 
 
 class Antipatterns:
@@ -552,7 +552,6 @@ class Antipatterns:
                                                         ]
                                                     )
                                         elif d.parent_select:
-                                            alias = None
                                             if len(list(d.parent_select.find_all(exp.Table))) > 0:
                                                 for t in d.parent_select.find_all(exp.Table):
                                                     table_name = str(

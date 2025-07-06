@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from bq_sql_antipattern_checker.config import AntipatternConfig, Config
+from src.bq_sql_antipattern_checker.config import AntipatternConfig, Config
 
 
 class TestAntipatternConfig:

@@ -10,3 +10,4 @@ typer~=0.16.0
 rich~=13.9.4
 PyYAML~=6.0.2
 protobuf~=6.31.1
+pytest~=8.4.1

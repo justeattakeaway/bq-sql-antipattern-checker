@@ -14,6 +14,7 @@ SELECT
   ,job_type
   ,statement_type
   ,query_info
+  ,sum(total_slot_ms) over(partition by project_id) as project_total_slot_ms
     from
 `{query_project}.{region}.INFORMATION_SCHEMA.JOBS`
 WHERE
@@ -25,6 +26,16 @@ WHERE
 {% if limit_row is defined %}
 LIMIT {{ limit_row }}
 {% endif %}
+),
+project_level_calculation as (
+select
+     *
+     ,sum(total_slot_ms / project_total_slot_ms) over (partition by project_id
+                                order by total_slot_ms desc
+                                rows between unbounded preceding
+                                                and current row) cumul_perc
+    , row_number () over (partition by project_id order by total_slot_ms desc) rn
+from raw_data
 )
 SELECT
     job_id
@@ -41,4 +52,6 @@ SELECT
     ,job_type
     ,statement_type
 FROM
-    raw_data
+    project_level_calculation
+where
+    round(cumul_perc,1) <= {cumul_perc}

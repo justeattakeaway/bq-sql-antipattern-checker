@@ -29,7 +29,7 @@ from google.cloud import bigquery
 from jinja2 import Template
 from sqlglot import exp
 
-from .config import Config
+from config import Config
 
 
 def get_client(config: Config) -> bigquery.Client:
@@ -44,7 +44,7 @@ def get_client(config: Config) -> bigquery.Client:
     return bigquery.Client(project=config.bigquery_job_project)
 
 
-def get_jobs_dict(config: Config, limit_row: int | None) -> dict[str, Any]:
+def get_jobs_dict(config: Config, limit_row: int | None, cumul_perc: float | None) -> dict[str, Any]:
     """Retrieve BigQuery jobs for a specific date and project.
 
     Queries INFORMATION_SCHEMA.JOBS to get job metadata including SQL statements
@@ -53,13 +53,11 @@ def get_jobs_dict(config: Config, limit_row: int | None) -> dict[str, Any]:
     Args:
         config: Configuration object containing BigQuery settings
         limit_row: limit on the number of rows to return (None for no limit)
+        cumul_perc: limit number of jobs to top costing ones by their cumulative percentage of cost
 
     Returns:
         dict: Dictionary of jobs indexed by job ID, containing job metadata
-
-    TODO: Add required BigQuery job labels
     """
-
     template_path = Path(__file__).parent / "templates" / "jobs_query.sql.j2"
     with open(template_path) as file_:
         template = Template(file_.read())
@@ -69,8 +67,8 @@ def get_jobs_dict(config: Config, limit_row: int | None) -> dict[str, Any]:
         date=config.date_values["query_run_date_str"],
         query_project=config.query_project,
         bigquery_region=config.bigquery_region,
+        cumul_perc = cumul_perc
     )
-
     query_job = get_client(config).query(jobs_query)
     if query_job.result():
         jobs_df = query_job.to_dataframe()
@@ -99,6 +97,8 @@ def get_columns_dict(config: Config) -> dict[str, Any]:
     with open(template_path) as file_:
         template = Template(file_.read())
     query = template.render()
+    print(config.information_schema_project)
+    print(len(config.information_schema_project))
     columns_query = query.format(
         information_schema_project=config.information_schema_project,
         bigquery_region=config.bigquery_region,
@@ -317,6 +317,7 @@ def get_output_df(output: dict[str, Any], index_value: str) -> pd.DataFrame:
     Returns:
         pd.DataFrame: DataFrame with job results and proper index
     """
+
     output_df = pd.DataFrame.from_dict(output, orient="index")
     output_df = output_df.reset_index().rename(columns={"index": index_value})
     return output_df
