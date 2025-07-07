@@ -64,7 +64,7 @@ def get_jobs_dict(
     jobs_query_template_path = Path(__file__).parent / "templates" / "jobs_query.sql.j2"
     with open(jobs_query_raw_template_path) as file_:
         template = Template(file_.read())
-    _jobs_query_raw = template.render()
+    jobs_query_raw_ = template.render()
     with open(jobs_query_template_path) as file_:
         template = Template(file_.read())
     jobs_query = template.render(limit_row=limit_row)
@@ -72,7 +72,7 @@ def get_jobs_dict(
     # Generate queries for each query project and join with UNION ALL
     jobs_raw_queries = []
     for query_project in config.query_project:
-        jobs_query_raw = _jobs_query_raw.format(
+        jobs_query_raw = jobs_query_raw_.format(
             region=config.bigquery_region,
             date=config.date_values["query_run_date_str"],
             query_project=query_project,
@@ -112,10 +112,10 @@ def get_columns_dict(config: Config) -> dict[str, Any]:
     information_schema_template_path = Path(__file__).parent / "templates" / "information_schema_query.sql.j2"
     with open(column_template_path) as file_:
         template = Template(file_.read())
-    _column_query = template.render()
+    column_query_= template.render()
     with open(row_count_template_path) as file_:
         template = Template(file_.read())
-    _row_count_query = template.render()
+    row_count_query_ = template.render()
     with open(information_schema_template_path) as file_:
         template = Template(file_.read())
     information_schema_query = template.render()
@@ -124,14 +124,14 @@ def get_columns_dict(config: Config) -> dict[str, Any]:
     column_queries = []
     row_count_queries = []
     for information_schema_project in config.information_schema_project:
-        column_query = _column_query.format(
+        column_query = column_query_.format(
             information_schema_project=information_schema_project,
             bigquery_region=config.bigquery_region,
             large_table_row_count=config.large_table_row_count,
         )
         column_queries.append(column_query)
 
-        row_count_query = _row_count_query.format(
+        row_count_query = row_count_query_.format(
             information_schema_project=information_schema_project,
             bigquery_region=config.bigquery_region,
             large_table_row_count=config.large_table_row_count,
@@ -145,13 +145,6 @@ def get_columns_dict(config: Config) -> dict[str, Any]:
         metadata_row_count_query=metadata_row_count_query,
         metadata_column_query=metadata_column_query
     )
-
-    print(metadata_column_query)
-    print("-----")
-    print(metadata_row_count_query)
-    print("-----")
-    print(information_schema_query)
-    print("-----")
 
     query_job = get_client(config).query(information_schema_query)
     if query_job.result():
