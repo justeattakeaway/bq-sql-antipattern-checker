@@ -1,0 +1,16 @@
+with row_count as (
+    {metadata_row_count_query}
+),
+column_info as (
+    {metadata_column_query}
+)
+select
+    row_count.project,
+    row_count.dataset,
+    row_count.table,
+    row_count.full_table_name,
+    row_count.total_rows,
+    column_info.partitioned_column,
+    column_info.datetime_columns
+from row_count
+left join column_info on row_count.full_table_name = column_info.full_table_name

@@ -1,0 +1,86 @@
+# BigQuery SQL Antipattern Checker Configuration
+# This file contains the configuration for the BQ SQL Antipattern Checker
+
+# BigQuery Configuration
+bigquery_job_project: "dev-project"  # Project where SQL commands are executed for this application
+bigquery_dataset_project: "dev-dataset-project"  # Project where your results table resides
+bigquery_dataset: "dev_dataset"  # Dataset where your results table resides
+bigquery_region: "region-EU"  # BigQuery region (e.g., "US", "EU", "asia-northeast1")
+information_schema_project: #Projects to get metadata information for the tables. Important for table size and partition information. Can add multiple projects
+  - "dev-dataset-project"
+query_project: #Projects to check the antipatterns of jobs executed. Can add multiple projects
+  - "dev-project"
+
+# Table Configuration
+results_table_name: "antipattern_results"  # Name of the results table
+
+# Thresholds
+large_table_row_count: 10000000  # Minimum row count to consider a table "large"
+distinct_function_row_count: 100000000  # Threshold for distinct function checks
+
+# Date Configuration
+days_back: 1  # Number of days back to check jobs, excludes current date. (default: yesterday's jobs)
+
+# Antipattern Configuration
+# Each antipattern can be enabled/disabled and optionally have a description
+antipatterns:
+  select_star:
+    enabled: true
+    description: "Check for SELECT * statements that can impact performance"
+  
+  semi_join_without_aggregation:
+    enabled: true
+    description: "Check for semi-joins without proper aggregation"
+  
+  order_without_limit:
+    enabled: true
+    description: "Check for ORDER BY clauses without LIMIT"
+  
+  regexp_in_where:
+    enabled: true
+    description: "Check for expensive REGEXP functions in WHERE clauses"
+  
+  like_before_more_selective:
+    enabled: true
+    description: "Check for LIKE conditions placed before more selective conditions"
+  
+  multiple_cte_reference:
+    enabled: true
+    description: "Check for CTEs that are referenced multiple times (may cause re-evaluation)"
+  
+  partition_used:
+    enabled: true
+    description: "Check if partitioned tables are properly filtered by partition key"
+  
+  big_date_range:
+    enabled: true
+    description: "Check for date ranges larger than 365 days"
+  
+  big_table_no_date:
+    enabled: true
+    description: "Check for queries on large tables without date filters"
+  
+  unpartitioned_tables:
+    enabled: true
+    description: "Check for queries on large unpartitioned tables"
+  
+  distinct_on_big_table:
+    enabled: true
+    description: "Check for DISTINCT operations on large tables"
+  
+  count_distinct_on_big_table:
+    enabled: true
+    description: "Check for COUNT DISTINCT operations on large tables"
+
+# Environment Variable Overrides
+# You can override any of the above settings using environment variables:
+# - BIGQUERY_JOB_PROJECT
+# - DESTINATION_DATASET_PROJECT
+# - DESTINATION_DATASET
+# - BIGQUERY_REGION
+# - INFORMATION_SCHEMA_PROJECT
+# - QUERY_PROJECT
+# - RESULTS_TABLE_NAME
+# - LARGE_TABLE_ROW_COUNT
+# - DISTINCT_FUNCTION_ROW_COUNT
+# - DAYS_BACK

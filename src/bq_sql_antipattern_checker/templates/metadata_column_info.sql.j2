@@ -1,0 +1,6 @@
+select
+    CONCAT(table_catalog, '.', table_schema, '.', table_name) as full_table_name,
+    max(case when is_partitioning_column = "YES" then column_name end) as partitioned_column,
+    array_agg(case when data_type in ('DATE', 'DATETIME', 'TIME', 'TIMESTAMP') then column_name end IGNORE NULLS) as datetime_columns
+from `{information_schema_project}.{bigquery_region}.INFORMATION_SCHEMA.COLUMNS`
+group by 1
