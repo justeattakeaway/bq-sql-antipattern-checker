@@ -189,7 +189,8 @@ bq-antipattern-checker run --dry-run --output-format console --verbose
 # Process limited jobs and save as JSON for testing
 bq-antipattern-checker run --dry-run --limit-row 100 --output-format json
 
-
+# Save results as JSON for further analysis
+bq-antipattern-checker run --dry-run --cumul-perc 0.2 --output-format json --output-file results.json
 
 # Save as Parquet for data analysis
 bq-antipattern-checker run --dry-run --output-format parquet --output-file analysis.parquet
