@@ -488,7 +488,7 @@ def run_check(
     """Run the antipattern check with the given configuration."""
     start = time.perf_counter()
     console.print(
-        f"🔍 Checking Jobs Ran On: {config.date_values['query_run_date_str']}", style="blue"
+        f"🔍 Checking Jobs Ran From: {config.date_values['query_run_date_str']}", style="blue"
     )
 
     # Get columns dictionary
