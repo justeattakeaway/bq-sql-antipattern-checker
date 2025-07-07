@@ -20,7 +20,7 @@ WITH raw_data AS (SELECT project_id
     AND (statement_type != "SCRIPT" OR statement_type IS NULL)
     AND total_slot_ms > 0
     AND query NOT LIKE '%BQ.REFRESH_MATERIALIZED_VIEW%'
-    {% if limit_row is defined %}
+    {% if limit_row is defined and limit_row %}
     LIMIT {{ limit_row }}
     {% endif %}
     ),

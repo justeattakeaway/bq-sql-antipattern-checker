@@ -170,10 +170,9 @@ def run_antipattern_check(
         False, "--dry-run", help="Save results locally instead of pushing to BigQuery"
     ),
     limit_row: int | None = typer.Option(
-        999999999999999,
+        None,
         "--limit-row",
         help="Limit number of rows to process (default: 100)",
-        # Limit None doesn't work on SQL so made a default very high limit for now
     ),
     cumul_perc: float | None = typer.Option(
         1,
@@ -488,7 +487,6 @@ def run_check(
 ) -> None:
     """Run the antipattern check with the given configuration."""
     start = time.perf_counter()
-
     console.print(
         f"🔍 Checking Jobs Ran On: {config.date_values['query_run_date_str']}", style="blue"
     )
