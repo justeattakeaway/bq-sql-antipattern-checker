@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from sqlglot import parse_one
 
-from bq_sql_antipattern_checker.antipatterns import Antipatterns
-from bq_sql_antipattern_checker.config import Config
+from src.bq_sql_antipattern_checker.antipatterns import Antipatterns
+from src.bq_sql_antipattern_checker.config import Config
 
 
 @pytest.fixture
@@ -275,23 +275,24 @@ class TestAntipatternConfiguration:
 
     def test_backwards_compatibility_functions_exist(self):
         """Test that backwards compatibility functions still exist."""
-        from bq_sql_antipattern_checker import antipatterns
+        config = Config.from_env()
+        antipatterns_checker = Antipatterns(config)
 
         # Test that the old function interface still works
-        assert hasattr(antipatterns, "check_select_star")
-        assert hasattr(antipatterns, "check_order_without_limit")
-        assert hasattr(antipatterns, "check_regexp_in_where")
-        assert callable(antipatterns.check_select_star)
+        assert hasattr(antipatterns_checker, "check_select_star")
+        assert hasattr(antipatterns_checker, "check_order_without_limit")
+        assert hasattr(antipatterns_checker, "check_regexp_in_where")
+        assert callable(antipatterns_checker.check_select_star)
 
     def test_backwards_compatibility_functions_work(self):
         """Test that backwards compatibility functions actually work."""
-        from bq_sql_antipattern_checker import antipatterns
-
+        config = Config.from_env()
+        antipatterns_checker = Antipatterns(config)
         sql = "SELECT * FROM `project.dataset.table`"
         ast = parse_one(sql, dialect="bigquery")
 
         # Test that old function interface still works
-        result = antipatterns.check_select_star(ast)
+        result = antipatterns_checker.check_select_star(ast)
         assert isinstance(result, bool)
 
 

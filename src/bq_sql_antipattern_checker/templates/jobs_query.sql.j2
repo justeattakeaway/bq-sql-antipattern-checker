@@ -1,44 +1,53 @@
-WITH raw_data AS (
-SELECT
-  project_id
-  ,job_id
-  ,labels
-  ,error_result
-  ,user_email
-  ,reservation_id
-  ,query
-  ,creation_time
-  ,end_time
-  ,total_slot_ms
-  ,total_bytes_processed
-  ,job_type
-  ,statement_type
-  ,query_info
-    from
-`{query_project}.{region}.INFORMATION_SCHEMA.JOBS`
-WHERE
-    DATE(creation_time) = DATE({date})
+WITH raw_data AS (SELECT project_id
+                       , job_id
+                       , labels
+                       , error_result
+                       , user_email
+                       , reservation_id
+                       , query
+                       , creation_time
+                       , end_time
+                       , total_slot_ms
+                       , total_bytes_processed
+                       , job_type
+                       , statement_type
+                       , query_info
+                       , SUM(total_slot_ms) over(PARTITION BY project_id) AS project_total_slot_ms
+                  FROM `{query_project}.{region}.INFORMATION_SCHEMA.JOBS`
+                  WHERE
+    DATE (creation_time) = DATE ({date})
     AND query IS NOT NULL
     AND (statement_type != "SCRIPT" OR statement_type IS NULL)
     AND total_slot_ms > 0
     AND query NOT LIKE '%BQ.REFRESH_MATERIALIZED_VIEW%'
-{% if limit_row is defined %}
-LIMIT {{ limit_row }}
-{% endif %}
-)
-SELECT
-    job_id
-    ,project_id
-    ,user_email
-    ,reservation_id
-    ,query
-    ,creation_time creation_time
-    ,DATE(creation_time) AS creation_date
-    ,total_slot_ms
-    ,1.0 * (TIMESTAMP_DIFF(end_time,creation_time,MINUTE)) total_duration_mins
-    ,total_bytes_processed / (1024*1024*1024.0) AS total_process_gb
-    ,total_slot_ms / (1000*60*60) AS total_slot_hrs
-    ,job_type
-    ,statement_type
+    {% if limit_row is defined %}
+    LIMIT {{ limit_row }}
+    {% endif %}
+    ),
+project_level_calculation AS (
+    SELECT *
+        , SUM (total_slot_ms / project_total_slot_ms) OVER (PARTITION BY project_id
+                                                            ORDER BY total_slot_ms DESC
+                                                            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) cumul_perc
+        , row_number () OVER (PARTITION BY project_id ORDER BY total_slot_ms DESC) rn
+    FROM raw_data
+    )
+SELECT job_id
+     , project_id
+     , user_email
+     , reservation_id
+     , query
+     , creation_time creation_time
+     , DATE (creation_time) AS creation_date
+     , total_slot_ms
+     , 1.0 * (TIMESTAMP_DIFF(end_time
+     , creation_time
+     , MINUTE)) total_duration_mins
+     , total_bytes_processed / (1024*1024*1024.0) AS total_process_gb
+     , total_slot_ms / (1000*60*60) AS total_slot_hrs
+     , job_type
+     , statement_type
 FROM
-    raw_data
+    project_level_calculation
+WHERE
+    round(cumul_perc, 1) <= {cumul_perc}

@@ -28,10 +28,10 @@ from pandas import DataFrame
 from rich.console import Console
 from rich.table import Table
 
-from . import functions
-from .antipatterns import Antipatterns
-from .classes import Job
-from .config import Config
+from bq_sql_antipattern_checker import functions
+from bq_sql_antipattern_checker.antipatterns import Antipatterns
+from bq_sql_antipattern_checker.classes import Job
+from bq_sql_antipattern_checker.config import Config
 
 
 class OutputFormat(str, Enum):
@@ -170,7 +170,15 @@ def run_antipattern_check(
         False, "--dry-run", help="Save results locally instead of pushing to BigQuery"
     ),
     limit_row: int | None = typer.Option(
-        None, "--limit-row", help="Limit number of rows to process (default: 100)"
+        999999999999999,
+        "--limit-row",
+        help="Limit number of rows to process (default: 100)",
+        # Limit None doesn't work on SQL so made a default very high limit for now
+    ),
+    cumul_perc: float | None = typer.Option(
+        1,
+        "--cumul-perc",
+        help="Cumulative percentage of cost incurred in project. If you want to limit number of jobs you want to process to top costing ones. If you say 0.8 it would limit to top costing jobs cumulatively making 80% of the cost of that project  (default: 1)",
     ),
     output_format: OutputFormat = typer.Option(
         OutputFormat.CONSOLE,
@@ -209,7 +217,7 @@ def run_antipattern_check(
             raise typer.Exit(code=1)
 
         # Run the antipattern check
-        run_check(config, verbose, dry_run, limit_row, output_format, output_file)
+        run_check(config, verbose, dry_run, limit_row, cumul_perc, output_format, output_file)
 
     except Exception as e:
         console.print(f"✗ Error: {e}", style="red")
@@ -474,6 +482,7 @@ def run_check(
     verbose: bool = False,
     dry_run: bool = False,
     limit_row: int | None = None,
+    cumul_perc: float | None = None,
     output_format: OutputFormat = OutputFormat.CONSOLE,
     output_file: Path | None = None,
 ) -> None:
@@ -494,7 +503,7 @@ def run_check(
     if verbose:
         console.print("📋 Fetching job information...", style="blue")
 
-    jobs_dict = functions.get_jobs_dict(config, limit_row)
+    jobs_dict = functions.get_jobs_dict(config, limit_row, cumul_perc)
 
     console.print(f"📈 Jobs Found: {len(jobs_dict)}", style="green")
 
@@ -508,6 +517,9 @@ def run_check(
         job.check_antipatterns(columns_dict, config)
 
         job_output[job_id] = job.__dict__
+        del job_output[job_id][
+            "antipatterns"
+        ]  # antipatterns object needs to be removed to convert dataframe
         processed_jobs += 1
 
         if verbose and processed_jobs % 100 == 0:
