@@ -2,20 +2,23 @@
 # This file contains the configuration for the BQ SQL Antipattern Checker
 
 # BigQuery Configuration
-bigquery_job_project: "dev-project"  # Project where SQL commands are executed for this application
-bigquery_dataset_project: "dev-dataset-project"  # Project where your results table resides
-bigquery_dataset: "dev_dataset"  # Dataset where your results table resides
+bigquery_job_project: "jet-data-streaming-dev"  # Project where SQL commands are executed for this application
+bigquery_dataset_project: "just-data-warehouse-dev"  # Project where your results table resides
+bigquery_dataset: "jet_data_scorecard"  # Dataset where your results table resides
 bigquery_region: "region-EU"  # BigQuery region (e.g., "US", "EU", "asia-northeast1")
 information_schema_project:
-  - "dev-dataset-project"
+  - "just-data"
+  - "just-data-warehouse"
 query_project:
-  - "dev-project"
+  - "just-data-os-prod"
+  - "just-data-dwh-prod"
+  - "just-data-cma-prod"
 
 # Table Configuration
-results_table_name: "antipattern_results"  # Name of the results table
+results_table_name: "antipattern_results_ozgur_test_2"  # Name of the results table
 
 # Thresholds
-large_table_row_count: 10000000  # Minimum row count to consider a table "large"
+large_table_row_count: 15000000  # Minimum row count to consider a table "large"
 distinct_function_row_count: 100000000  # Threshold for distinct function checks
 
 # Date Configuration

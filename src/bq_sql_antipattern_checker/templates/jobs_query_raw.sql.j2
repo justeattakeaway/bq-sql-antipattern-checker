@@ -1,0 +1,22 @@
+SELECT project_id
+   , job_id
+   , labels
+   , error_result
+   , user_email
+   , reservation_id
+   , query
+   , creation_time
+   , end_time
+   , total_slot_ms
+   , total_bytes_processed
+   , job_type
+   , statement_type
+   , query_info
+   , SUM(total_slot_ms) over(PARTITION BY project_id) AS project_total_slot_ms
+FROM `{query_project}.{region}.INFORMATION_SCHEMA.JOBS`
+WHERE
+    DATE (creation_time) = DATE ({date})
+    AND query IS NOT NULL
+    AND (statement_type != "SCRIPT" OR statement_type IS NULL)
+    AND total_slot_ms > 0
+    AND query NOT LIKE '%BQ.REFRESH_MATERIALIZED_VIEW%'

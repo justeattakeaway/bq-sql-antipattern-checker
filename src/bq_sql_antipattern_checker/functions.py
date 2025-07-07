@@ -60,25 +60,30 @@ def get_jobs_dict(
     Returns:
         dict: Dictionary of jobs indexed by job ID, containing job metadata
     """
-    template_path = Path(__file__).parent / "templates" / "jobs_query.sql.j2"
-    with open(template_path) as file_:
+    jobs_query_raw_template_path = Path(__file__).parent / "templates" / "jobs_query_raw.sql.j2"
+    jobs_query_template_path = Path(__file__).parent / "templates" / "jobs_query.sql.j2"
+    with open(jobs_query_raw_template_path) as file_:
         template = Template(file_.read())
-    query = template.render(limit_row=limit_row)
+    _jobs_query_raw = template.render()
+    with open(jobs_query_template_path) as file_:
+        template = Template(file_.read())
+    jobs_query = template.render(limit_row=limit_row)
 
     # Generate queries for each query project and join with UNION ALL
-    jobs_queries = []
+    jobs_raw_queries = []
     for query_project in config.query_project:
-        jobs_query = query.format(
+        jobs_query_raw = _jobs_query_raw.format(
             region=config.bigquery_region,
             date=config.date_values["query_run_date_str"],
             query_project=query_project,
             bigquery_region=config.bigquery_region,
             cumul_perc=cumul_perc,
         )
-        jobs_queries.append(jobs_query)
+        jobs_raw_queries.append(jobs_query_raw)
 
-    final_jobs_query = " UNION ALL ".join(jobs_queries)
-    query_job = get_client(config).query(final_jobs_query)
+    final_jobs_query_raw = " UNION ALL ".join(jobs_raw_queries)
+    jobs_query = jobs_query.format(jobs_query_raw=final_jobs_query_raw)
+    query_job = get_client(config).query(jobs_query)
     if query_job.result():
         jobs_df = query_job.to_dataframe()
         jobs_dict: dict = jobs_df.to_dict("index")
@@ -102,23 +107,53 @@ def get_columns_dict(config: Config) -> dict[str, Any]:
 
     TODO: Add required BigQuery job labels
     """
-    template_path = Path(__file__).parent / "templates" / "columns_query.sql.j2"
-    with open(template_path) as file_:
+    column_template_path = Path(__file__).parent / "templates" / "metadata_column_info.sql.j2"
+    row_count_template_path = Path(__file__).parent / "templates" / "metadata_row_count.sql.j2"
+    information_schema_template_path = Path(__file__).parent / "templates" / "information_schema_query.sql.j2"
+    with open(column_template_path) as file_:
         template = Template(file_.read())
-    query = template.render()
+    _column_query = template.render()
+    with open(row_count_template_path) as file_:
+        template = Template(file_.read())
+    _row_count_query = template.render()
+    with open(information_schema_template_path) as file_:
+        template = Template(file_.read())
+    information_schema_query = template.render()
 
     # Generate queries for each information_schema_project and join with UNION ALL
-    columns_queries = []
+    column_queries = []
+    row_count_queries = []
     for information_schema_project in config.information_schema_project:
-        columns_query = query.format(
+        column_query = _column_query.format(
             information_schema_project=information_schema_project,
             bigquery_region=config.bigquery_region,
             large_table_row_count=config.large_table_row_count,
         )
-        columns_queries.append(columns_query)
+        column_queries.append(column_query)
 
-    final_columns_query = " UNION ALL ".join(columns_queries)
-    query_job = get_client(config).query(final_columns_query)
+        row_count_query = _row_count_query.format(
+            information_schema_project=information_schema_project,
+            bigquery_region=config.bigquery_region,
+            large_table_row_count=config.large_table_row_count,
+        )
+        row_count_queries.append(row_count_query)
+
+    metadata_column_query = " UNION ALL ".join(column_queries)
+    metadata_row_count_query = " UNION ALL ".join(row_count_queries)
+
+    information_schema_query = information_schema_query.format(
+        metadata_row_count_query=metadata_row_count_query,
+        metadata_column_query=metadata_column_query
+    )
+
+    print(metadata_column_query)
+    print("-----")
+    print(metadata_row_count_query)
+    print("-----")
+    print(information_schema_query)
+    print("-----")
+
+    query_job = get_client(config).query(information_schema_query)
     if query_job.result():
         columns_df = query_job.to_dataframe()
         columns_dict: dict[str, Any] = columns_df.set_index("full_table_name").to_dict("index")
