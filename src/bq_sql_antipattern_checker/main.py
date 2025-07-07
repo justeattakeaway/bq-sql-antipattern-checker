@@ -321,13 +321,11 @@ def show_config(
         console.print(threshold_table)
 
         # Display date configuration
-        console.print("\n📅 Start Date Configuration", style="bold cyan")
+        console.print("\n📅 Date Configuration", style="bold cyan")
         date_table = Table()
         date_table.add_column("Setting", style="yellow")
         date_table.add_column("Value", style="green")
-
-        for key, value in config.date_values.items():
-            date_table.add_row(key.replace("_", " ").title(), str(value))
+        date_table.add_row("Run Date(s)", str(config.run_dates))
 
         console.print(date_table)
 
