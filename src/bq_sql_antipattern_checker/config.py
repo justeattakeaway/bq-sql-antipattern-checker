@@ -78,6 +78,12 @@ class Config:
             "query_run_date_str": "'" + str(self.job_run_date) + "'",
         }
 
+        self.run_dates = []
+        run_date = self.job_run_date
+        while run_date < date.today():
+            self.run_dates.append(str(run_date))
+            run_date += timedelta(days=1)
+
         # Table names dictionary for backwards compatibility
         self.table_names = {"results": self.results_table_name}
 
