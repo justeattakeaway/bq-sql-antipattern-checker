@@ -82,7 +82,10 @@ def get_jobs_dict(
         jobs_raw_queries.append(jobs_query_raw)
 
     final_jobs_query_raw = " UNION ALL ".join(jobs_raw_queries)
-    jobs_query = jobs_query.format(jobs_query_raw=final_jobs_query_raw)
+    jobs_query = jobs_query.format(
+        jobs_query_raw=final_jobs_query_raw,
+        cumul_perc=cumul_perc
+        )
     query_job = get_client(config).query(jobs_query)
     if query_job.result():
         jobs_df = query_job.to_dataframe()
