@@ -321,7 +321,7 @@ def show_config(
         console.print(threshold_table)
 
         # Display date configuration
-        console.print("\n📅 Date Configuration", style="bold cyan")
+        console.print("\n📅 Start Date Configuration", style="bold cyan")
         date_table = Table()
         date_table.add_column("Setting", style="yellow")
         date_table.add_column("Value", style="green")
