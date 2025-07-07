@@ -47,12 +47,6 @@ If you don't play nice you'll be banned.
 
 ## Installation
 
-### Install via pip (recommended)
-
-```bash
-pip install bq-sql-antipattern-checker
-```
-
 ### Install from source
 
 ```bash
@@ -60,11 +54,20 @@ pip install bq-sql-antipattern-checker
 git clone https://github.com/justeattakeaway/bq-sql-antipattern-checker.git
 cd bq-sql-antipattern-checker
 
-# Install with pip
+# Install with pip (traditional method)
 pip install .
 
 # Or install in development mode
 pip install -e .
+
+# Alternative: Using uv (faster Python package manager)
+uv add bq-sql-antipattern-checker
+
+# Or install from source with uv
+uv pip install .
+
+# Development mode with uv
+uv pip install -e .
 ```
 
 ### Requirements
@@ -311,8 +314,10 @@ bigquery_job_project: "dev-project"  # Project where SQL commands are executed f
 bigquery_dataset_project: "dev-dataset-project"  # Project where your results table resides
 bigquery_dataset: "dev_dataset"  # Dataset where your results table resides
 bigquery_region: "region-EU"  # BigQuery region (e.g., "US", "EU", "asia-northeast1")
-information_schema_project: "dev-dataset-project"  # Project where TABLE_STORAGE and COLUMNS views are stored
-query_project: "dev-project"  # Project where INFORMATION_SCHEMA.JOBS view resides
+information_schema_project:
+  - "dev-dataset-project"  # Project(s) where TABLE_STORAGE and COLUMNS views are stored
+query_project:
+  - "dev-project"  # Project(s) where INFORMATION_SCHEMA.JOBS view resides
 
 # Table Configuration
 results_table_name: "antipattern_results"  # Name of the results table
@@ -383,8 +388,8 @@ antipatterns:
 * **`bigquery_dataset_project`** - The project where the dataset and the results table resides.
 * **`bigquery_dataset`** - The dataset where your results table resides.
 * **`bigquery_region`** - Your BigQuery region (e.g., "US", "EU", "asia-northeast1").
-* **`information_schema_project`** - Where your information schema views reside, mainly TABLE_STORAGE and COLUMNS views.
-* **`query_project`** - This can be used for JOBS view. If you have decoupled storage from computation, this field can be used for checking the jobs for antipatterns.
+* **`information_schema_project`** - List of projects where your information schema views reside, mainly TABLE_STORAGE and COLUMNS views. Multiple projects can be specified as a YAML list.
+* **`query_project`** - List of projects for JOBS view. If you have decoupled storage from computation, this field can be used for checking the jobs for antipatterns across multiple projects.
 * **`results_table_name`** - The name of the table where analysis results will be stored.
 
 #### Threshold Settings
@@ -406,8 +411,8 @@ You can override any configuration setting using environment variables:
 * `DESTINATION_DATASET_PROJECT`
 * `DESTINATION_DATASET`
 * `BIGQUERY_REGION`
-* `INFORMATION_SCHEMA_PROJECT`
-* `QUERY_PROJECT`
+* `INFORMATION_SCHEMA_PROJECT` (comma-separated list of projects)
+* `QUERY_PROJECT` (comma-separated list of projects)
 * `RESULTS_TABLE_NAME`
 * `LARGE_TABLE_ROW_COUNT`
 * `DISTINCT_FUNCTION_ROW_COUNT`
@@ -419,6 +424,29 @@ Some companies/users keep all their tables and run all their jobs on the same pr
 
 - **Single Project Setup**: Set all project fields to the same project ID
 - **Decoupled Setup**: Use different projects for job execution, data storage, and metadata access
+
+### Multi-Project Support
+
+The tool now supports analyzing jobs and metadata across multiple projects:
+
+**YAML Configuration (Multiple Projects):**
+```yaml
+information_schema_project:
+  - "project-1"
+  - "project-2"
+  - "project-3"
+query_project:
+  - "compute-project-1"
+  - "compute-project-2"
+```
+
+**Environment Variables (Multiple Projects):**
+```bash
+export INFORMATION_SCHEMA_PROJECT="project-1,project-2,project-3"
+export QUERY_PROJECT="compute-project-1,compute-project-2"
+```
+
+When multiple projects are specified, the tool automatically combines data from all projects using SQL UNION ALL operations, providing a unified view across your organization's BigQuery infrastructure.
 
 ### Viewing Your Configuration
 

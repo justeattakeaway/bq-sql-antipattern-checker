@@ -49,8 +49,8 @@ class Config:
     bigquery_dataset_project: str
     bigquery_dataset: str
     bigquery_region: str
-    information_schema_project: str
-    query_project: str
+    information_schema_project: list[str]
+    query_project: list[str]
 
     # Table Configuration
     results_table_name: str
@@ -169,10 +169,10 @@ class Config:
             information_schema_project=os.getenv(
                 "INFORMATION_SCHEMA_PROJECT",
                 os.getenv("DESTINATION_DATASET_PROJECT", "dev-dataset-project"),
-            ),
+            ).split(","),
             query_project=os.getenv(
                 "QUERY_PROJECT", os.getenv("BIGQUERY_JOB_PROJECT", "dev-project")
-            ),
+            ).split(","),
             results_table_name=os.getenv("RESULTS_TABLE_NAME", "antipattern_results"),
             large_table_row_count=int(os.getenv("LARGE_TABLE_ROW_COUNT", "1000")),
             distinct_function_row_count=int(os.getenv("DISTINCT_FUNCTION_ROW_COUNT", "10000")),

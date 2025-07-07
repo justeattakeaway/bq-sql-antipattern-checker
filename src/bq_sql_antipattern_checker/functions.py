@@ -64,14 +64,21 @@ def get_jobs_dict(
     with open(template_path) as file_:
         template = Template(file_.read())
     query = template.render(limit_row=limit_row)
-    jobs_query = query.format(
-        region=config.bigquery_region,
-        date=config.date_values["query_run_date_str"],
-        query_project=config.query_project,
-        bigquery_region=config.bigquery_region,
-        cumul_perc=cumul_perc,
-    )
-    query_job = get_client(config).query(jobs_query)
+
+    # Generate queries for each query project and join with UNION ALL
+    jobs_queries = []
+    for query_project in config.query_project:
+        jobs_query = query.format(
+            region=config.bigquery_region,
+            date=config.date_values["query_run_date_str"],
+            query_project=query_project,
+            bigquery_region=config.bigquery_region,
+            cumul_perc=cumul_perc,
+        )
+        jobs_queries.append(jobs_query)
+
+    final_jobs_query = " UNION ALL ".join(jobs_queries)
+    query_job = get_client(config).query(final_jobs_query)
     if query_job.result():
         jobs_df = query_job.to_dataframe()
         jobs_dict: dict = jobs_df.to_dict("index")
@@ -99,12 +106,19 @@ def get_columns_dict(config: Config) -> dict[str, Any]:
     with open(template_path) as file_:
         template = Template(file_.read())
     query = template.render()
-    columns_query = query.format(
-        information_schema_project=config.information_schema_project,
-        bigquery_region=config.bigquery_region,
-        large_table_row_count=config.large_table_row_count,
-    )
-    query_job = get_client(config).query(columns_query)
+
+    # Generate queries for each information_schema_project and join with UNION ALL
+    columns_queries = []
+    for information_schema_project in config.information_schema_project:
+        columns_query = query.format(
+            information_schema_project=information_schema_project,
+            bigquery_region=config.bigquery_region,
+            large_table_row_count=config.large_table_row_count,
+        )
+        columns_queries.append(columns_query)
+
+    final_columns_query = " UNION ALL ".join(columns_queries)
+    query_job = get_client(config).query(final_columns_query)
     if query_job.result():
         columns_df = query_job.to_dataframe()
         columns_dict: dict[str, Any] = columns_df.set_index("full_table_name").to_dict("index")

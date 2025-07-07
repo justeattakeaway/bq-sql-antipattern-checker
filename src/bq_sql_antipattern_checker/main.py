@@ -300,8 +300,8 @@ def show_config(
         bq_table.add_row("Dataset Project", config.bigquery_dataset_project)
         bq_table.add_row("Dataset", config.bigquery_dataset)
         bq_table.add_row("Region", config.bigquery_region)
-        bq_table.add_row("Information Schema Project", config.information_schema_project)
-        bq_table.add_row("Query Project", config.query_project)
+        bq_table.add_row("Information Schema Project", ", ".join(config.information_schema_project))
+        bq_table.add_row("Query Project", ", ".join(config.query_project))
         bq_table.add_row("Results Table", config.results_table_name)
 
         console.print(bq_table)
@@ -401,8 +401,10 @@ bigquery_job_project: "dev-project"  # Project where SQL commands are executed f
 bigquery_dataset_project: "dev-dataset-project"  # Project where your results table resides
 bigquery_dataset: "dev_dataset"  # Dataset where your results table resides
 bigquery_region: "region-EU"  # BigQuery region (e.g., "US", "EU", "asia-northeast1")
-information_schema_project: "dev-dataset-project"  # Project where TABLE_STORAGE and COLUMNS views are stored
-query_project: "dev-project"  # Project where INFORMATION_SCHEMA.JOBS view resides
+information_schema_project:
+  - "dev-dataset-project"  # Project where TABLE_STORAGE and COLUMNS views are stored
+query_project:
+  - "dev-project"  # Project where INFORMATION_SCHEMA.JOBS view resides
 
 # Table Configuration
 results_table_name: "antipattern_results"  # Name of the results table
