@@ -105,6 +105,9 @@ pip install -e .
 
    # Run with verbose output and limited rows
    bq-antipattern-checker run --config antipattern-config.yaml --verbose --limit-row 100
+
+   # Run with only top costing jobs making 80% cumulative cost of the project (Recommended. Useful for eliminating negligible jobs and reduce computation)
+   bq-antipattern-checker run --config antipattern-config.yaml --cumul-perc 0.8
    ```
 
 ## Usage
@@ -133,6 +136,9 @@ bq-antipattern-checker run --dry-run --output-format json
 # Limit number of jobs processed (useful for testing)
 bq-antipattern-checker run --limit-row 50
 
+# Run with only top costing jobs making 80% cumulative cost of the project (Recommended. Useful for eliminating negligible jobs and reduce computation)
+bq-antipattern-checker run --config antipattern-config.yaml --cumul-perc 0.8
+
 # Combine dry-run with limit for local testing
 bq-antipattern-checker run --dry-run --limit-row 10 --output-format csv
 
@@ -154,6 +160,7 @@ bq-antipattern-checker create-config --output my-config.yaml
 * `--verbose, -v` - Enable verbose output for detailed progress information
 * `--dry-run` - Save results locally instead of pushing to BigQuery
 * `--limit-row` - Limit number of jobs to process (useful for testing or sampling)
+* `--cumul-perc` - Limit to only top costing jobs making cumulatively X% of the cost of that project. (Recommended. Useful for eliminating negligible jobs and reduce computation)
 * `--output-format` - Output format for dry-run: `console`, `json`, `csv`, `parquet`
 * `--output-file` - Specify output file path (auto-generated if not provided)
 
@@ -181,6 +188,8 @@ bq-antipattern-checker run --dry-run --output-format console --verbose
 
 # Process limited jobs and save as JSON for testing
 bq-antipattern-checker run --dry-run --limit-row 100 --output-format json
+
+
 
 # Save as Parquet for data analysis
 bq-antipattern-checker run --dry-run --output-format parquet --output-file analysis.parquet
@@ -378,8 +387,8 @@ antipatterns:
 * **`results_table_name`** - The name of the table where analysis results will be stored.
 
 #### Threshold Settings
-* **`large_table_row_count`** - Minimum row count to consider a table "large" for antipattern detection (default: 1000).
-* **`distinct_function_row_count`** - Threshold for distinct function checks (default: 10000).
+* **`large_table_row_count`** - Minimum row count to consider a table "large" for antipattern detection (default: 1000000).
+* **`distinct_function_row_count`** - Threshold for distinct function checks (default: 100000000).
 
 #### Date Settings
 * **`days_back`** - Number of days back to check jobs. Default is 1 (yesterday's jobs).
