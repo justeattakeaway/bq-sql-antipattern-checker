@@ -6,9 +6,9 @@ bigquery_job_project: "dev-project"  # Project where SQL commands are executed f
 bigquery_dataset_project: "dev-dataset-project"  # Project where your results table resides
 bigquery_dataset: "dev_dataset"  # Dataset where your results table resides
 bigquery_region: "region-EU"  # BigQuery region (e.g., "US", "EU", "asia-northeast1")
-information_schema_project:
+information_schema_project: #Projects to get metadata information for the tables. Important for table size and partition information. Can add multiple projects
   - "dev-dataset-project"
-query_project:
+query_project: #Projects to check the antipatterns of jobs executed. Can add multiple projects
   - "dev-project"
 
 # Table Configuration
@@ -19,7 +19,7 @@ large_table_row_count: 10000000  # Minimum row count to consider a table "large"
 distinct_function_row_count: 100000000  # Threshold for distinct function checks
 
 # Date Configuration
-days_back: 1  # Number of days back to check jobs (default: yesterday's jobs)
+days_back: 1  # Number of days back to check jobs, excludes current date. (default: yesterday's jobs)
 
 # Antipattern Configuration
 # Each antipattern can be enabled/disabled and optionally have a description
