@@ -387,7 +387,7 @@ antipatterns:
 * **`results_table_name`** - The name of the table where analysis results will be stored.
 
 #### Threshold Settings
-* **`large_table_row_count`** - Minimum row count to consider a table "large" for antipattern detection (default: 1000000).
+* **`large_table_row_count`** - Minimum row count to consider a table "large" for antipattern detection (default: 10000000).
 * **`distinct_function_row_count`** - Threshold for distinct function checks (default: 100000000).
 
 #### Date Settings
