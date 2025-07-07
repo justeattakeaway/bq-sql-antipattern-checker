@@ -378,11 +378,10 @@ def push_df_to_bq(df: pd.DataFrame, config: Config) -> None:
         df: pandas DataFrame containing the results
         config: Configuration object containing BigQuery settings
     """
-    table_id = "{dataset_project}.{dataset_name}.{table_name}${date}".format(
+    table_id = "{dataset_project}.{dataset_name}.{table_name}".format(
         dataset_project=config.bigquery_dataset_project,
         dataset_name=config.bigquery_dataset,
         table_name=config.results_table_name,
-        date=config.date_values["partition_date"],
     )
     job_config = bigquery.LoadJobConfig(
         write_disposition="WRITE_TRUNCATE",
