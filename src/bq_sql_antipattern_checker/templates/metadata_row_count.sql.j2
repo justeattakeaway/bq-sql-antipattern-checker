@@ -1,0 +1,8 @@
+SELECT
+        table_catalog as project,
+        table_schema as dataset,
+        table_name as table,
+        CONCAT(table_catalog, '.', table_schema, '.', table_name) as full_table_name
+        , total_rows
+        FROM `{information_schema_project}.{bigquery_region}.INFORMATION_SCHEMA.TABLE_STORAGE_BY_PROJECT`
+        where total_rows >= {large_table_row_count}
