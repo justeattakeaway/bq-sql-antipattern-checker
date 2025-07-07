@@ -28,11 +28,10 @@ from pandas import DataFrame
 from rich.console import Console
 from rich.table import Table
 
-
-from antipatterns import Antipatterns
-from classes import Job
-from config import Config
-import functions
+from bq_sql_antipattern_checker import functions
+from bq_sql_antipattern_checker.antipatterns import Antipatterns
+from bq_sql_antipattern_checker.classes import Job
+from bq_sql_antipattern_checker.config import Config
 
 
 class OutputFormat(str, Enum):
@@ -171,11 +170,15 @@ def run_antipattern_check(
         False, "--dry-run", help="Save results locally instead of pushing to BigQuery"
     ),
     limit_row: int | None = typer.Option(
-        999999999999999, "--limit-row", help="Limit number of rows to process (default: 100)"
-        #Limit None doesn't work on SQL so made a default very high limit for now
+        999999999999999,
+        "--limit-row",
+        help="Limit number of rows to process (default: 100)",
+        # Limit None doesn't work on SQL so made a default very high limit for now
     ),
     cumul_perc: float | None = typer.Option(
-        1, "--cumul-perc", help="Cumulative percentage of cost incurred in project. If you want to limit number of jobs you want to process to top costing ones. If you say 0.8 it would limit to top costing jobs cumulatively making 80% of the cost of that project  (default: 1)"
+        1,
+        "--cumul-perc",
+        help="Cumulative percentage of cost incurred in project. If you want to limit number of jobs you want to process to top costing ones. If you say 0.8 it would limit to top costing jobs cumulatively making 80% of the cost of that project  (default: 1)",
     ),
     output_format: OutputFormat = typer.Option(
         OutputFormat.CONSOLE,
@@ -514,7 +517,9 @@ def run_check(
         job.check_antipatterns(columns_dict, config)
 
         job_output[job_id] = job.__dict__
-        del job_output[job_id]["antipatterns"] #antipatterns object needs to be removed to convert dataframe
+        del job_output[job_id][
+            "antipatterns"
+        ]  # antipatterns object needs to be removed to convert dataframe
         processed_jobs += 1
 
         if verbose and processed_jobs % 100 == 0:

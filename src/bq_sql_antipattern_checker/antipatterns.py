@@ -30,8 +30,8 @@ from typing import Any
 
 from sqlglot import exp
 
-from config import Config
-import functions
+from bq_sql_antipattern_checker import functions
+from bq_sql_antipattern_checker.config import Config
 
 
 class Antipatterns:
