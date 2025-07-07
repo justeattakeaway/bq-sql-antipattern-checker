@@ -81,7 +81,7 @@ def get_jobs_dict(
         )
         jobs_raw_queries.append(jobs_query_raw)
 
-    final_jobs_query_raw = " UNION ALL ".join(jobs_raw_queries)
+    final_jobs_query_raw = "\n UNION ALL \n".join(jobs_raw_queries)
     jobs_query = jobs_query.format(
         jobs_query_raw=final_jobs_query_raw,
         cumul_perc=cumul_perc
@@ -141,8 +141,8 @@ def get_columns_dict(config: Config) -> dict[str, Any]:
         )
         row_count_queries.append(row_count_query)
 
-    metadata_column_query = " UNION ALL ".join(column_queries)
-    metadata_row_count_query = " UNION ALL ".join(row_count_queries)
+    metadata_column_query = "\n UNION ALL \n".join(column_queries)
+    metadata_row_count_query = "\n UNION ALL \n".join(row_count_queries)
 
     information_schema_query = information_schema_query.format(
         metadata_row_count_query=metadata_row_count_query,
