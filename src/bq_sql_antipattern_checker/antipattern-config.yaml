@@ -13,8 +13,8 @@ query_project: "dev-project"  # Project where INFORMATION_SCHEMA.JOBS view resid
 results_table_name: "antipattern_results"  # Name of the results table
 
 # Thresholds
-large_table_row_count: 1000  # Minimum row count to consider a table "large"
-distinct_function_row_count: 10000  # Threshold for distinct function checks
+large_table_row_count: 10000000  # Minimum row count to consider a table "large"
+distinct_function_row_count: 100000000  # Threshold for distinct function checks
 
 # Date Configuration
 days_back: 1  # Number of days back to check jobs (default: yesterday's jobs)
