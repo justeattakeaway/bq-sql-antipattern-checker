@@ -385,7 +385,6 @@ def push_df_to_bq(df: pd.DataFrame, config: Config) -> None:
     )
     job_config = bigquery.LoadJobConfig(
         write_disposition="WRITE_TRUNCATE",
-        schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_RELAXATION],
         time_partitioning=bigquery.TimePartitioning(
             type_=bigquery.TimePartitioningType.DAY,
             field="creation_date",  # field to use for partitioning
