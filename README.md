@@ -94,8 +94,9 @@ uv pip install -e .
    ```
 
 4. **Edit the configuration file** (`antipattern-config.yaml`) with your project details.
+5. Navigate to `src/bq_sql_antipattern_checker` folder
 
-5. **Run the antipattern checker:**
+6. **Run the antipattern checker:**
    ```bash
    # Test with a small sample first (recommended)
    bq-antipattern-checker run --config antipattern-config.yaml --dry-run --limit-row 10
