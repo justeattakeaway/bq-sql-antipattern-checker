@@ -315,9 +315,9 @@ bigquery_job_project: "dev-project"  # Project where SQL commands are executed f
 bigquery_dataset_project: "dev-dataset-project"  # Project where your results table resides
 bigquery_dataset: "dev_dataset"  # Dataset where your results table resides
 bigquery_region: "region-EU"  # BigQuery region (e.g., "US", "EU", "asia-northeast1")
-information_schema_project:
+information_schema_project: #Projects to get metadata information for the tables. Important for table size and partition information. Multiple projects can be added
   - "dev-dataset-project"  # Project(s) where TABLE_STORAGE and COLUMNS views are stored
-query_project:
+query_project: #Projects to check the antipatterns of jobs executed. Multiple projects can be added
   - "dev-project"  # Project(s) where INFORMATION_SCHEMA.JOBS view resides
 
 # Table Configuration
@@ -389,8 +389,8 @@ antipatterns:
 * **`bigquery_dataset_project`** - The project where the dataset and the results table resides.
 * **`bigquery_dataset`** - The dataset where your results table resides.
 * **`bigquery_region`** - Your BigQuery region (e.g., "US", "EU", "asia-northeast1").
-* **`information_schema_project`** - List of projects where your information schema views reside, mainly TABLE_STORAGE and COLUMNS views. Multiple projects can be specified as a YAML list.
-* **`query_project`** - List of projects for JOBS view. If you have decoupled storage from computation, this field can be used for checking the jobs for antipatterns across multiple projects.
+* **`information_schema_project`** - List of projects where your information schema views reside, mainly TABLE_STORAGE and COLUMNS views. Multiple projects can be specified as a YAML list. This is important to get table size and partition info to check relevant antipatterns. 
+* **`query_project`** - List of projects for JOBS view. This will check for antipatterns for the jobs that ran on the specified query projects. You can specify multiple projects. 
 * **`results_table_name`** - The name of the table where analysis results will be stored.
 
 #### Threshold Settings
