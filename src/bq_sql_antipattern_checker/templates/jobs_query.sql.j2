@@ -6,10 +6,9 @@ WITH raw_data AS (
     ),
 project_level_calculation AS (
     SELECT *
-        , SUM (total_slot_ms / project_total_slot_ms) OVER (PARTITION BY project_id
+        , SUM (total_slot_ms / project_total_slot_ms) OVER (PARTITION BY project_id, date(creation_time)
                                                             ORDER BY total_slot_ms DESC
                                                             ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) cumul_perc
-        , row_number () OVER (PARTITION BY project_id ORDER BY total_slot_ms DESC) rn
     FROM raw_data
     )
 SELECT job_id
