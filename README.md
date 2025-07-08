@@ -357,7 +357,7 @@ antipatterns:
     enabled: true
     description: "Check for CTEs that are referenced multiple times (may cause re-evaluation)"
   
-  partition_used:
+  partition_not_used:
     enabled: true
     description: "Check if partitioned tables are properly filtered by partition key"
   
@@ -583,20 +583,20 @@ Each antipattern can be individually enabled or disabled in your configuration f
 
 ### Complete Antipattern List
 
-| Antipattern | Default | Description |
-|-------------|---------|-------------|
-| `select_star` | ✓ | SELECT * statements that can impact performance |
+| Antipattern                     | Default | Description |
+|---------------------------------|---------|-------------|
+| `select_star`                   | ✓ | SELECT * statements that can impact performance |
 | `semi_join_without_aggregation` | ✓ | Semi-joins without proper aggregation |
-| `order_without_limit` | ✓ | ORDER BY clauses without LIMIT |
-| `regexp_in_where` | ✓ | Expensive REGEXP functions in WHERE clauses |
-| `like_before_more_selective` | ✓ | LIKE conditions before more selective conditions |
-| `multiple_cte_reference` | ✓ | CTEs referenced multiple times (causes re-evaluation) |
-| `partition_used` | ✓ | Partitioned tables not filtered by partition key |
-| `big_date_range` | ✓ | Date ranges larger than 365 days |
-| `big_table_no_date` | ✓ | Queries on large tables without date filters |
-| `unpartitioned_tables` | ✓ | Queries on large unpartitioned tables |
-| `distinct_on_big_table` | ✓ | DISTINCT operations on large tables |
-| `count_distinct_on_big_table` | ✓ | COUNT DISTINCT operations on large tables |
+| `order_without_limit`           | ✓ | ORDER BY clauses without LIMIT |
+| `regexp_in_where`               | ✓ | Expensive REGEXP functions in WHERE clauses |
+| `like_before_more_selective`    | ✓ | LIKE conditions before more selective conditions |
+| `multiple_cte_reference`        | ✓ | CTEs referenced multiple times (causes re-evaluation) |
+| `partition_not_used`            | ✓ | Partitioned tables not filtered by partition key |
+| `big_date_range`                | ✓ | Date ranges larger than 365 days |
+| `big_table_no_date`             | ✓ | Queries on large tables without date filters |
+| `unpartitioned_tables`          | ✓ | Queries on large unpartitioned tables |
+| `distinct_on_big_table`         | ✓ | DISTINCT operations on large tables |
+| `count_distinct_on_big_table`   | ✓ | COUNT DISTINCT operations on large tables |
 
 ### Detailed Antipattern Descriptions
 
