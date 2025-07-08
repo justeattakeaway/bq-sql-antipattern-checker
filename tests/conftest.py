@@ -43,7 +43,7 @@ antipatterns:
   select_star:
     enabled: true
     description: "Test description"
-  partition_used:
+  partition_not_used:
     enabled: false
     description: "Test disabled"
 """

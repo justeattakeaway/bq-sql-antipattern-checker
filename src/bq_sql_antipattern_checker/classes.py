@@ -113,7 +113,7 @@ class Job:
 
                     if not ast.find(exp.UserDefinedFunction) and not ast.find(exp.SetItem):
                         # Check partition usage
-                        if config.is_antipattern_enabled("partition_used"):
+                        if config.is_antipattern_enabled("partition_not_used"):
                             try:
                                 partition_not_used, available_partitions = (
                                     self.antipatterns.check_partition_used(ast, columns_dict)

@@ -42,11 +42,11 @@ class TestConfig:
         config = Config.from_yaml(sample_config_file)
 
         assert config.is_antipattern_enabled("select_star") is True
-        assert config.is_antipattern_enabled("partition_used") is False
+        assert config.is_antipattern_enabled("partition_not_used") is False
 
         enabled_antipatterns = config.get_enabled_antipatterns()
         assert "select_star" in enabled_antipatterns
-        assert "partition_used" not in enabled_antipatterns
+        assert "partition_not_used" not in enabled_antipatterns
 
     def test_from_env(self, monkeypatch):
         """Test loading configuration from environment variables."""
@@ -78,7 +78,7 @@ class TestConfig:
             "regexp_in_where",
             "like_before_more_selective",
             "multiple_cte_reference",
-            "partition_used",
+            "partition_not_used",
             "big_date_range",
             "big_table_no_date",
             "unpartitioned_tables",
