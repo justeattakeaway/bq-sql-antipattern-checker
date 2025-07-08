@@ -282,20 +282,6 @@ There are numerous ways you can contribute in this project.
 * New antipatterns. If you think there are critical things to check on BigQuery for optimisation and they can be added. 
 * Improving existing antipatterns, if you spotted scenarios being missed out in the existing antipatterns.
 * For clarification of any questions and clarifications feel free to start a discussion.
-  
-## Requirements & How to Run On Your Environment (Legacy)
-* Python >= 3.10
-* Clone the repo to your environment. We will convert the whole thing to a pip package later.
-* When you clone the repo, your IDE should install the dependencies on the requirements.txt otherwise you can use `pip install -r requirements.txt` command to install everything or independently install items from requirements.txt file. 
-* You need a BigQuery project to execute SQL statements and to populate results table. That is used in bigquery_job_project in config section below
-* A table created for the results. You can use the DDL SQL statement under templates. Full qualification of table name will be used for bigquery_dataset_project, bigquery_dataset and table_names variables in the config section below.
-* You need Google CLI to authorise, so install if your environment doesn't have it from [here](https://cloud.google.com/sdk/docs/install) 
-* You need to authorise your BigQuery job project if you haven't yet on your environment. Follow the information on this [link](https://cloud.google.com/bigquery/docs/authentication) to configure your authorisation.
-
-Whether you run locally or as a cloud run, used account needs these permissions
-* INFORMATION_SCHEMA views (JOBS, TABLE_STORAGE_BY_PROJECT, COLUMNS) for the query projects and dataset projects you want to check. Metadata Viewer role should suffice. 
-* Editor role (write permission) on the dataset you will push the results.
-* Check [here](https://cloud.google.com/bigquery/docs/access-control) for more information on roles and permissions.
 
 ## Configuration File Structure
 
