@@ -357,7 +357,7 @@ antipatterns:
     enabled: true
     description: "Check for CTEs that are referenced multiple times (may cause re-evaluation)"
   
-  partition_used:
+  partition_not_used:
     enabled: true
     description: "Check if partitioned tables are properly filtered by partition key"
   
@@ -503,7 +503,7 @@ The application is built with a modular, class-based architecture for better mai
 The application now provides granular error reporting:
 
 ```
-Error in check_partition_used: division by zero
+Error in check_partition_not_used: division by zero
 Error in check_big_date_range: invalid date format
 Error in check_select_star: unexpected AST structure
 ```
@@ -547,7 +547,7 @@ bq-antipattern-checker run --dry-run --limit-row 100
 When specific antipattern checks fail, the enhanced error handling will show exactly which check failed:
 ```
 Error in check_big_table_no_date: KeyError: 'column_name'
-Error in check_partition_used: AttributeError: 'NoneType' object has no attribute 'args'
+Error in check_partition_not_used: AttributeError: 'NoneType' object has no attribute 'args'
 ```
 
 This allows you to:
@@ -591,7 +591,7 @@ Each antipattern can be individually enabled or disabled in your configuration f
 | `regexp_in_where` | ✓ | Expensive REGEXP functions in WHERE clauses |
 | `like_before_more_selective` | ✓ | LIKE conditions before more selective conditions |
 | `multiple_cte_reference` | ✓ | CTEs referenced multiple times (causes re-evaluation) |
-| `partition_used` | ✓ | Partitioned tables not filtered by partition key |
+| `partition_not_used` | ✓ | Partitioned tables not filtered by partition key |
 | `big_date_range` | ✓ | Date ranges larger than 365 days |
 | `big_table_no_date` | ✓ | Queries on large tables without date filters |
 | `unpartitioned_tables` | ✓ | Queries on large unpartitioned tables |
@@ -600,7 +600,7 @@ Each antipattern can be individually enabled or disabled in your configuration f
 
 ### Detailed Antipattern Descriptions
 
-### partition_used (formerly partition_not_used)
+### partition_not_used
 
 If a table in JOIN or WHERE clause references a table with a partitioned column but the query is not using that column in JOIN or WHERE, then this value is True.
 
