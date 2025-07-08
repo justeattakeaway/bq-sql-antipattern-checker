@@ -503,7 +503,7 @@ The application is built with a modular, class-based architecture for better mai
 The application now provides granular error reporting:
 
 ```
-Error in check_partition_used: division by zero
+Error in check_partition_not_used: division by zero
 Error in check_big_date_range: invalid date format
 Error in check_select_star: unexpected AST structure
 ```
@@ -547,7 +547,7 @@ bq-antipattern-checker run --dry-run --limit-row 100
 When specific antipattern checks fail, the enhanced error handling will show exactly which check failed:
 ```
 Error in check_big_table_no_date: KeyError: 'column_name'
-Error in check_partition_used: AttributeError: 'NoneType' object has no attribute 'args'
+Error in check_partition_not_used: AttributeError: 'NoneType' object has no attribute 'args'
 ```
 
 This allows you to:
@@ -600,7 +600,7 @@ Each antipattern can be individually enabled or disabled in your configuration f
 
 ### Detailed Antipattern Descriptions
 
-### partition_used (formerly partition_not_used)
+### partition_not_used
 
 If a table in JOIN or WHERE clause references a table with a partitioned column but the query is not using that column in JOIN or WHERE, then this value is True.
 
