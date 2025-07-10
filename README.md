@@ -61,8 +61,13 @@ pip install .
 pip install -e .
 
 # Alternative: Using uv (faster Python package manager)
-uv build
+uv add bq-sql-antipattern-checker
 
+# Or install from source with uv
+uv pip install .
+
+# Development mode with uv
+uv pip install -e .
 ```
 
 ### Requirements
@@ -74,9 +79,9 @@ uv build
 ## Quick Start
 
 1. **Install the package:**
-   
-   Follow [Install from source](#install-from-source) step
-
+   ```bash
+   pip install bq-sql-antipattern-checker
+   ```
 
 2. **Set up authentication:**
    ```bash
@@ -88,9 +93,10 @@ uv build
    bq-antipattern-checker create-config
    ```
 
-4. **Edit the configuration file** (`antipattern-config.yaml`) with your project details
+4. **Edit the configuration file** (`antipattern-config.yaml`) with your project details.
+5. Navigate to `src/bq_sql_antipattern_checker` folder
 
-5. **Run the antipattern checker:**
+6. **Run the antipattern checker:**
    ```bash
    # Test with a small sample first (recommended)
    bq-antipattern-checker run --config antipattern-config.yaml --dry-run --limit-row 10
@@ -276,20 +282,6 @@ There are numerous ways you can contribute in this project.
 * New antipatterns. If you think there are critical things to check on BigQuery for optimisation and they can be added. 
 * Improving existing antipatterns, if you spotted scenarios being missed out in the existing antipatterns.
 * For clarification of any questions and clarifications feel free to start a discussion.
-  
-## Requirements & How to Run On Your Environment (Legacy)
-* Python >= 3.10
-* Clone the repo to your environment. We will convert the whole thing to a pip package later.
-* When you clone the repo, your IDE should install the dependencies on the requirements.txt otherwise you can use `pip install -r requirements.txt` command to install everything or independently install items from requirements.txt file. 
-* You need a BigQuery project to execute SQL statements and to populate results table. That is used in bigquery_job_project in config section below
-* A table created for the results. You can use the DDL SQL statement under templates. Full qualification of table name will be used for bigquery_dataset_project, bigquery_dataset and table_names variables in the config section below.
-* You need Google CLI to authorise, so install if your environment doesn't have it from [here](https://cloud.google.com/sdk/docs/install) 
-* You need to authorise your BigQuery job project if you haven't yet on your environment. Follow the information on this [link](https://cloud.google.com/bigquery/docs/authentication) to configure your authorisation.
-
-Whether you run locally or as a cloud run, used account needs these permissions
-* INFORMATION_SCHEMA views (JOBS, TABLE_STORAGE_BY_PROJECT, COLUMNS) for the query projects and dataset projects you want to check. Metadata Viewer role should suffice. 
-* Editor role (write permission) on the dataset you will push the results.
-* Check [here](https://cloud.google.com/bigquery/docs/access-control) for more information on roles and permissions.
 
 ## Configuration File Structure
 
@@ -351,7 +343,7 @@ antipatterns:
     enabled: true
     description: "Check for CTEs that are referenced multiple times (may cause re-evaluation)"
   
-  partition_used:
+  partition_not_used:
     enabled: true
     description: "Check if partitioned tables are properly filtered by partition key"
   
@@ -497,7 +489,7 @@ The application is built with a modular, class-based architecture for better mai
 The application now provides granular error reporting:
 
 ```
-Error in check_partition_used: division by zero
+Error in check_partition_not_used: division by zero
 Error in check_big_date_range: invalid date format
 Error in check_select_star: unexpected AST structure
 ```
@@ -541,7 +533,7 @@ bq-antipattern-checker run --dry-run --limit-row 100
 When specific antipattern checks fail, the enhanced error handling will show exactly which check failed:
 ```
 Error in check_big_table_no_date: KeyError: 'column_name'
-Error in check_partition_used: AttributeError: 'NoneType' object has no attribute 'args'
+Error in check_partition_not_used: AttributeError: 'NoneType' object has no attribute 'args'
 ```
 
 This allows you to:
@@ -577,24 +569,24 @@ Each antipattern can be individually enabled or disabled in your configuration f
 
 ### Complete Antipattern List
 
-| Antipattern | Default | Description |
-|-------------|---------|-------------|
-| `select_star` | ✓ | SELECT * statements that can impact performance |
+| Antipattern                     | Default | Description |
+|---------------------------------|---------|-------------|
+| `select_star`                   | ✓ | SELECT * statements that can impact performance |
 | `semi_join_without_aggregation` | ✓ | Semi-joins without proper aggregation |
-| `order_without_limit` | ✓ | ORDER BY clauses without LIMIT |
-| `regexp_in_where` | ✓ | Expensive REGEXP functions in WHERE clauses |
-| `like_before_more_selective` | ✓ | LIKE conditions before more selective conditions |
-| `multiple_cte_reference` | ✓ | CTEs referenced multiple times (causes re-evaluation) |
-| `partition_used` | ✓ | Partitioned tables not filtered by partition key |
-| `big_date_range` | ✓ | Date ranges larger than 365 days |
-| `big_table_no_date` | ✓ | Queries on large tables without date filters |
-| `unpartitioned_tables` | ✓ | Queries on large unpartitioned tables |
-| `distinct_on_big_table` | ✓ | DISTINCT operations on large tables |
-| `count_distinct_on_big_table` | ✓ | COUNT DISTINCT operations on large tables |
+| `order_without_limit`           | ✓ | ORDER BY clauses without LIMIT |
+| `regexp_in_where`               | ✓ | Expensive REGEXP functions in WHERE clauses |
+| `like_before_more_selective`    | ✓ | LIKE conditions before more selective conditions |
+| `multiple_cte_reference`        | ✓ | CTEs referenced multiple times (causes re-evaluation) |
+| `partition_not_used`            | ✓ | Partitioned tables not filtered by partition key |
+| `big_date_range`                | ✓ | Date ranges larger than 365 days |
+| `big_table_no_date`             | ✓ | Queries on large tables without date filters |
+| `unpartitioned_tables`          | ✓ | Queries on large unpartitioned tables |
+| `distinct_on_big_table`         | ✓ | DISTINCT operations on large tables |
+| `count_distinct_on_big_table`   | ✓ | COUNT DISTINCT operations on large tables |
 
 ### Detailed Antipattern Descriptions
 
-### partition_used (formerly partition_not_used)
+### partition_not_used
 
 If a table in JOIN or WHERE clause references a table with a partitioned column but the query is not using that column in JOIN or WHERE, then this value is True.
 

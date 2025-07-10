@@ -109,7 +109,7 @@ class Config:
             "multiple_cte_reference": AntipatternConfig(
                 enabled=True, description="Check for CTEs referenced multiple times"
             ),
-            "partition_used": AntipatternConfig(
+            "partition_not_used": AntipatternConfig(
                 enabled=True, description="Check if partitioned tables are properly filtered"
             ),
             "big_date_range": AntipatternConfig(

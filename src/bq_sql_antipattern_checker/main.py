@@ -441,7 +441,7 @@ antipatterns:
     enabled: true
     description: "Check for CTEs that are referenced multiple times (may cause re-evaluation)"
   
-  partition_used:
+  partition_not_used:
     enabled: true
     description: "Check if partitioned tables are properly filtered by partition key"
   
