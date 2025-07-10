@@ -61,13 +61,8 @@ pip install .
 pip install -e .
 
 # Alternative: Using uv (faster Python package manager)
-uv add bq-sql-antipattern-checker
+uv build
 
-# Or install from source with uv
-uv pip install .
-
-# Development mode with uv
-uv pip install -e .
 ```
 
 ### Requirements
@@ -79,9 +74,9 @@ uv pip install -e .
 ## Quick Start
 
 1. **Install the package:**
-   ```bash
-   pip install bq-sql-antipattern-checker
-   ```
+   
+   Follow [Install from source](#install-from-source) step
+
 
 2. **Set up authentication:**
    ```bash
@@ -93,10 +88,9 @@ uv pip install -e .
    bq-antipattern-checker create-config
    ```
 
-4. **Edit the configuration file** (`antipattern-config.yaml`) with your project details.
-5. Navigate to `src/bq_sql_antipattern_checker` folder
+4. **Edit the configuration file** (`antipattern-config.yaml`) with your project details
 
-6. **Run the antipattern checker:**
+5. **Run the antipattern checker:**
    ```bash
    # Test with a small sample first (recommended)
    bq-antipattern-checker run --config antipattern-config.yaml --dry-run --limit-row 10
