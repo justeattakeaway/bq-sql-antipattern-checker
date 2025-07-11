@@ -49,6 +49,11 @@ If you don't play nice you'll be banned.
 
 ### Install from source
 
+> ⚠️ DO NOT INSTALL FROM PYPI. 
+> 
+> PyPi package [bq-sql-antipattern-checker](https://pypi.org/project/bq-sql-antipattern-checker/) doesn't mirror this repository and could be pampered with. 
+> Always install from the source code repository.
+
 ```bash
 # Clone the repository
 git clone https://github.com/justeattakeaway/bq-sql-antipattern-checker.git
