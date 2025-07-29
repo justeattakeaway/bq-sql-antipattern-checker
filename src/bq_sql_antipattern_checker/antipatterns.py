@@ -130,15 +130,17 @@ class Antipatterns:
             bool_starter = string_version.find("this=Boolean(this=True)")
 
             index_starter = max(one_eq_one_starter + bool_starter, 0)
-            less_selective_clause_index = -1
             like_clause = string_version[index_starter:].find("Like")
             regexp_clause = string_version[index_starter:].find("Regexp")
 
+            # Fix: Properly handle less selective clause positions
+            less_selective_positions = []
             if like_clause > -1:
-                if regexp_clause > -1:
-                    less_selective_clause_index = min(like_clause, less_selective_clause_index)
-                else:
-                    less_selective_clause_index = like_clause
+                less_selective_positions.append(like_clause)
+            if regexp_clause > -1:
+                less_selective_positions.append(regexp_clause)
+            
+            less_selective_clause_index = min(less_selective_positions) if less_selective_positions else -1
 
             more_selective_clauses = []
             if string_version[index_starter:].find("GT") >= 0:
