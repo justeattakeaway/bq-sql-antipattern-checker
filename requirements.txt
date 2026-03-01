@@ -1,5 +1,5 @@
 sqlglot~=22.2
-sqlparse~=0.4
+sqlparse~=0.5
 MarkupSafe~=2.1
 pandas~=2.1
 db-dtypes~=1.2
